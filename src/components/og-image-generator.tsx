@@ -54,7 +54,7 @@ function measureAndFit(
   return { size, fitted };
 }
 
-function drawBgImage(ctx: CanvasRenderingContext2D, img: HTMLImageElement, W: number, H: number) {
+function drawBgImage(ctx: CanvasRenderingContext2D, img: HTMLImageElement, W: number, H: number, overlay: number) {
   const imgRatio = img.width / img.height;
   const cnvRatio = W / H;
   let sx, sy, sw, sh;
@@ -70,8 +70,10 @@ function drawBgImage(ctx: CanvasRenderingContext2D, img: HTMLImageElement, W: nu
     sy = (img.height - sh) / 2;
   }
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
-  ctx.fillStyle = "rgba(0,0,0,0.35)";
-  ctx.fillRect(0, 0, W, H);
+  if (overlay > 0) {
+    ctx.fillStyle = `rgba(0,0,0,${overlay})`;
+    ctx.fillRect(0, 0, W, H);
+  }
 }
 
 function drawOgImage(
@@ -85,13 +87,14 @@ function drawOgImage(
   logoImg: HTMLImageElement | null,
   bgImg: HTMLImageElement | null,
   layout: LayoutMode,
+  overlay: number,
 ) {
   const { bg, text, accent, watermark } = palette;
   const s = W / 1200; // scale factor
 
   // Background
   if (bgImg) {
-    drawBgImage(ctx, bgImg, W, H);
+    drawBgImage(ctx, bgImg, W, H, overlay);
   } else {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
@@ -219,6 +222,7 @@ export default function OgImageGenerator() {
   const [copyError, setCopyError] = useState(false);
   const [logoImg, setLogoImg] = useState<HTMLImageElement | null>(null);
   const [bgImg, setBgImg] = useState<HTMLImageElement | null>(null);
+  const [overlay, setOverlay] = useState(0.35);
 
   const sizePreset = SIZE_PRESETS[sizeIdx];
   const W = sizePreset.w;
@@ -240,8 +244,8 @@ export default function OgImageGenerator() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout);
-  }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout]);
+    drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay);
+  }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay]);
 
   useEffect(() => {
     render();
@@ -447,6 +451,31 @@ export default function OgImageGenerator() {
           </div>
         </div>
       </div>
+
+      {/* Overlay (só relevante com fundo) */}
+      {bgImg && (
+        <div>
+          <label className="text-sm font-medium">Escurecimento do fundo</label>
+          <div className="mt-1 flex gap-2">
+            {[
+              { label: "Nenhum", value: 0 },
+              { label: "Leve", value: 0.2 },
+              { label: "Médio", value: 0.35 },
+              { label: "Forte", value: 0.5 },
+            ].map((o) => (
+              <button key={o.label} onClick={() => setOverlay(o.value)}
+                className={`pressable rounded-md border px-3 py-1.5 text-sm ${
+                  overlay === o.value
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-card hover:border-foreground"
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Preview + Actions */}
       <div className="space-y-4">
