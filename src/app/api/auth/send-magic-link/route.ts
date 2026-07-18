@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY!);
 
   await resend.emails.send({
-    from: "CajuOS <onboarding@resend.dev>",
+    from: "CajuOS <noreply@cajuos.dev>",
     to: email,
     subject: "Login — CajuOS Admin",
     html: `<p><a href="${link}">Clique aqui</a> para entrar no admin. Este link expira em 15 minutos.</p>`,
