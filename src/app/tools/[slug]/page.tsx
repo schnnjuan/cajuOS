@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { tools, toolBySlug, toolIndex } from "@/lib/tools";
 import { getToolComponent } from "@/components/tool-components";
+import { ToolIcon } from "@/components/tool-icons";
 
 export function generateStaticParams() {
   return tools.map((t) => ({ slug: t.slug }));
@@ -49,8 +50,8 @@ export default async function ToolPage({
           </h1>
           <p className="mt-2 text-muted">{tool.tagline}</p>
         </div>
-        <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-100 font-mono dark:bg-zinc-800">
-          {tool.icon}
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+          <ToolIcon slug={tool.slug} size={24} />
         </span>
       </div>
 

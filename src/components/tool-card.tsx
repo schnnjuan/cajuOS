@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Tool } from "@/lib/tools";
+import { ToolIcon } from "@/components/tool-icons";
 
 export function ToolCard({ tool, index }: { tool: Tool; index: number }) {
   return (
@@ -8,8 +9,8 @@ export function ToolCard({ tool, index }: { tool: Tool; index: number }) {
       className="card-hover animate-in group flex items-start gap-4 rounded-xl border border-border bg-card p-5"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 font-mono text-sm dark:bg-zinc-800">
-        {tool.icon}
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+        <ToolIcon slug={tool.slug} size={20} />
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
