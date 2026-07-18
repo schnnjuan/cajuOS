@@ -1,14 +1,12 @@
 import Link from "next/link";
-import { tools, TOTAL_PLANNED } from "@/lib/tools";
+import { tools, toolProgressLabel } from "@/lib/tools";
 import { ToolCard } from "@/components/tool-card";
 
 export default function Home() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-20">
       <section className="flex flex-col gap-6">
-        <p className="text-sm text-muted">
-          Tool #{tools.length} de {TOTAL_PLANNED}
-        </p>
+        <p className="text-sm text-muted">{toolProgressLabel()}</p>
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
           Pequenas ferramentas úteis.
           <br />

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { contentSlugs, listContent } from "@/lib/content";
+import { compileMDX } from "next-mdx-remote/rsc";
+import { listContent, contentSlugs, readMdx } from "@/lib/content";
 
 export function generateStaticParams() {
   return contentSlugs("blog").map((slug) => ({ slug }));
@@ -25,14 +26,15 @@ export default async function BlogPost({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (!contentSlugs("blog").includes(slug)) notFound();
+  const raw = readMdx("blog", slug);
+  if (!raw) notFound();
 
-  const { default: Post } = await import(`@/content/blog/${slug}.mdx`);
+  const { content } = await compileMDX({ source: raw });
 
   return (
     <article className="mx-auto max-w-2xl px-6 py-20">
       <div className="prose prose-zinc max-w-none dark:prose-invert">
-        <Post />
+        {content}
       </div>
     </article>
   );

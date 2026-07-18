@@ -45,3 +45,9 @@ export function contentSlugs(dir: string): string[] {
     .filter((f) => /\.mdx?$/.test(f))
     .map((f) => f.replace(/\.mdx?$/, ""));
 }
+
+export function readMdx(dir: string, slug: string): string | null {
+  const full = path.join(CONTENT_DIR, dir, `${slug}.mdx`);
+  if (!fs.existsSync(full)) return null;
+  return fs.readFileSync(full, "utf8");
+}

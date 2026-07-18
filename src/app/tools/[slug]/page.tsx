@@ -53,10 +53,11 @@ export default async function ToolPage({
 
       <section className="mt-10 rounded-xl border border-border bg-card p-6">
         <h2 className="text-sm font-medium uppercase tracking-wide text-muted">
-          Demo
+          O que faz
         </h2>
-        <p className="mt-3 text-muted">
-          Demo interativa em breve. Enquanto isso, leia os docs ou o changelog.
+        <p className="mt-3">{tool.tagline}</p>
+        <p className="mt-2 text-muted">
+          Tool #{index + 1} da coleção CajuOS. Open source, roda no browser.
         </p>
       </section>
 
@@ -74,7 +75,12 @@ export default async function ToolPage({
           Changelog →
         </Link>
         {tool.hasApi && (
-          <span className="text-muted">API: em breve</span>
+          <Link
+            href={`/docs/${tool.slug}`}
+            className="text-muted underline underline-offset-4 hover:text-foreground"
+          >
+            API disponível
+          </Link>
         )}
       </div>
     </div>

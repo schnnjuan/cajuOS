@@ -1,15 +1,12 @@
-import { listContent, contentSlugs } from "@/lib/content";
+import { compileMDX } from "next-mdx-remote/rsc";
+import { listContent, readMdx } from "@/lib/content";
 
 export const metadata = {
   title: "Changelog",
   description: "O que mudou em cada tool CajuOS.",
 };
 
-export function generateStaticParams() {
-  return contentSlugs("changelog").map((slug) => ({ slug }));
-}
-
-export default function ChangelogPage() {
+export default async function ChangelogPage() {
   const entries = listContent("changelog");
 
   return (
@@ -20,35 +17,29 @@ export default function ChangelogPage() {
       </p>
 
       <div className="mt-10 space-y-10">
-        {entries.map((e) => (
-          <section key={e.slug}>
-            <h2 className="text-lg font-medium tracking-tight">
-              {e.title}
-            </h2>
-            <ChangelogBody slug={e.slug} />
-          </section>
-        ))}
-        {entries.length === 0 && (
-          <p className="text-muted">Nada ainda.</p>
-        )}
+        {entries.map((e) => {
+          const raw = readMdx("changelog", e.slug);
+          if (!raw) return null;
+          return (
+            <section key={e.slug}>
+              <h2 className="text-lg font-medium tracking-tight">
+                {e.title}
+              </h2>
+              <ChangelogBody source={raw} />
+            </section>
+          );
+        })}
+        {entries.length === 0 && <p className="text-muted">Nada ainda.</p>}
       </div>
     </div>
   );
 }
 
-import { notFound } from "next/navigation";
-
-function ChangelogBody({ slug }: { slug: string }) {
-  if (!contentSlugs("changelog").includes(slug)) return null;
-  // renderiza via import dinâmico no componente pai
-  return <ChangelogMDX slug={slug} />;
-}
-
-async function ChangelogMDX({ slug }: { slug: string }) {
-  const { default: Body } = await import(`@/content/changelog/${slug}.mdx`);
+async function ChangelogBody({ source }: { source: string }) {
+  const { content } = await compileMDX({ source });
   return (
     <div className="prose prose-zinc mt-3 max-w-none text-sm dark:prose-invert">
-      <Body />
+      {content}
     </div>
   );
 }

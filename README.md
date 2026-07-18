@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CajuOS
 
-## Getting Started
+Uma tool por semana. Pequenas ferramentas úteis, open source, feitas para durar.
 
-First, run the development server:
+Site estilo [Ollama](https://ollama.com): tipografia limpa, muito espaço em branco, grid de tools. White mode por padrão com toggle dark.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Stack
+
+- [Next.js](https://nextjs.org) 16 (App Router) + Turbopack
+- [Tailwind CSS](https://tailwindcss.com) v4
+- [MDX](https://mdxjs.com) para blog, docs e changelog (versionado no git, sem CMS)
+- Deploy na [Vercel](https://vercel.com)
+
+## Estrutura
+
+```
+src/app/
+├── page.tsx              → landing (hero + grid de tools)
+├── tools/page.tsx        → índice de tools
+├── tools/[slug]/page.tsx → página de cada tool
+├── blog/page.tsx         → índice de posts
+├── blog/[slug]/page.tsx  → post (MDX em src/content/blog)
+├── changelog/page.tsx    → changelog global (MDX em src/content/changelog)
+├── docs/[tool]/page.tsx  → docs de API por tool (MDX em src/content/docs)
+├── about/page.tsx        → sobre + roadmap
+├── feed.xml/route.ts     → RSS do blog
+└── opengraph-image.tsx   → OG image global
+
+src/lib/tools.ts          → registry das tools (adicionar tool aqui)
+src/content/              → MDX de blog, docs e changelog
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Como rodar
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev      # http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Build de produção:
 
-## Learn More
+```bash
+npm run build
+npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Adicionar uma tool
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Adicione o objeto em `src/lib/tools.ts` (`slug`, `name`, `tagline`, `icon`, `hasApi`, `launchedAt`).
+2. Opcional: crie `src/content/blog/<slug>.mdx`, `src/content/docs/<slug>.mdx` e uma entrada em `src/content/changelog/global.mdx`.
+3. O contador "Tool #N de ∞" no header/footer é automático.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
 
-## Deploy on Vercel
+Conecte o repo à Vercel (free tier). Cada push no `main` faz redeploy.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Licença
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT — o site e as tools client-side são abertos.

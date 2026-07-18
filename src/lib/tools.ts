@@ -7,35 +7,17 @@ export type Tool = {
   launchedAt: string;
 };
 
-// Ordem = ordem de lançamento. "Tool #N de 52" usa o índice.
-export const tools: Tool[] = [
-  {
-    slug: "json-prettify",
-    name: "JSON Prettify",
-    tagline: "Formata e valida JSON colado na hora.",
-    icon: "{}",
-    hasApi: false,
-    launchedAt: "2026-01-05",
-  },
-  {
-    slug: "slugify",
-    name: "Slugify",
-    tagline: "Texto legível vira slug de URL limpo.",
-    icon: "#",
-    hasApi: false,
-    launchedAt: "2026-01-12",
-  },
-  {
-    slug: "epoch-now",
-    name: "Epoch Now",
-    tagline: "Converte timestamp <-> data, com fuso.",
-    icon: "⏱",
-    hasApi: true,
-    launchedAt: "2026-01-19",
-  },
-];
+// Ordem = ordem de lançamento. "Tool #N de ∞" usa o índice.
+// Adicione tools aqui conforme forem lançadas.
+export const tools: Tool[] = [];
 
-export const TOTAL_PLANNED = 52;
+// Alvo simbólico: infinito (desafio contínuo, não fecha em 52).
+export const TOTAL_PLANNED = "∞";
+
+// Texto "Tool #N de ∞" — dinâmico conforme quantas tools foram adicionadas.
+export function toolProgressLabel(): string {
+  return `Tool #${tools.length} de ${TOTAL_PLANNED}`;
+}
 
 export function toolBySlug(slug: string): Tool | undefined {
   return tools.find((t) => t.slug === slug);

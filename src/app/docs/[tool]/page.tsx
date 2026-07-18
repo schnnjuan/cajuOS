@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { contentSlugs } from "@/lib/content";
+import { compileMDX } from "next-mdx-remote/rsc";
+import { contentSlugs, readMdx } from "@/lib/content";
 import { toolBySlug } from "@/lib/tools";
 
 export function generateStaticParams() {
@@ -31,16 +32,17 @@ export default async function DocsPage({
   const { tool } = await params;
   const t = toolBySlug(tool);
   if (!t) notFound();
-  if (!contentSlugs("docs").includes(tool)) notFound();
+  const raw = readMdx("docs", tool);
+  if (!raw) notFound();
 
-  const { default: Doc } = await import(`@/content/docs/${tool}.mdx`);
+  const { content } = await compileMDX({ source: raw });
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-20">
       <p className="text-sm text-muted">{t.name}</p>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight">Docs</h1>
       <div className="prose prose-zinc mt-8 max-w-none dark:prose-invert">
-        <Doc />
+        {content}
       </div>
     </div>
   );

@@ -27,9 +27,9 @@ export const metadata: Metadata = {
 const themeScript = `
 (function() {
   try {
+    // Default claro. Só escurece se o usuário clicou no toggle (localStorage).
     var t = localStorage.getItem('theme');
-    var m = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (t === 'dark' || (!t && m)) document.documentElement.classList.add('dark');
+    if (t === 'dark') document.documentElement.classList.add('dark');
   } catch (e) {}
 })();
 `;
