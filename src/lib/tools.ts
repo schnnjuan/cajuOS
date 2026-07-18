@@ -9,7 +9,16 @@ export type Tool = {
 
 // Ordem = ordem de lançamento. "Tool #N de ∞" usa o índice.
 // Adicione tools aqui conforme forem lançadas.
-export const tools: Tool[] = [];
+export const tools: Tool[] = [
+  {
+    slug: "og-image",
+    name: "OG Image Generator",
+    tagline: "Gera imagens Open Graph 1200×630 a partir de título e subtítulo. Roda no navegador.",
+    icon: "🖼",
+    hasApi: false,
+    launchedAt: "2026-07-24",
+  },
+];
 
 // Alvo simbólico: infinito (desafio contínuo, não fecha em 52).
 export const TOTAL_PLANNED = "∞";
