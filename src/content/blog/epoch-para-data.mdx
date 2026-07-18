@@ -1,0 +1,19 @@
+export const metadata = {
+  title: "Convertendo epoch pra data humana com Epoch Now",
+  description: "Timestamp pra data e vice-versa, com fuso.",
+  date: "2026-01-20",
+};
+
+## Caso
+
+Você tem `1737283200` num log e precisa saber que dia foi. Ou precisa gerar
+um epoch pra um teste.
+
+## Uso
+
+O **Epoch Now** aceita os dois sentidos:
+
+- `1737283200` → `2026-01-19 00:00:00 UTC`
+- `2026-01-19` → epoch correspondente
+
+Útil em scripts e quando debugando expiriação de token.

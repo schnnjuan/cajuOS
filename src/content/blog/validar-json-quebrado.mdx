@@ -1,0 +1,21 @@
+export const metadata = {
+  title: "Como validar JSON quebrado com o JSON Prettify",
+  description: "Cole, formate e veja o erro na hora.",
+  date: "2026-01-06",
+};
+
+## O problema
+
+JSON colado de log ou resposta de API vem torto: sem quebra de linha, com
+vírgula no lugar errado. Debugar na mão é lento.
+
+## A solução
+
+Abra o **JSON Prettify**, cole o conteúdo e ele formata indentado. Se tem
+erro de sintaxe, a primeira linha problemática é destacada.
+
+```json
+{ "name": "caju", "tools": 52, "open": true }
+```
+
+Pronto — copie o resultado formatado de volta pro seu código.
