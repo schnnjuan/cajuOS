@@ -92,7 +92,7 @@ export default function EditPostPage({
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-3xl px-6 py-20">
+      <div className="mx-auto max-w-3xl px-6 py-12">
         <p className="text-muted">Carregando…</p>
       </div>
     );
@@ -100,7 +100,7 @@ export default function EditPostPage({
 
   if (loadErr || !data) {
     return (
-      <div className="mx-auto max-w-3xl px-6 py-20">
+      <div className="mx-auto max-w-3xl px-6 py-12">
         <p className="text-red-500">Erro ao carregar post.</p>
         <a href="/admin/blog" className="mt-4 block text-sm text-muted underline">
           ← Voltar
@@ -110,7 +110,7 @@ export default function EditPostPage({
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-20">
+    <div className="mx-auto max-w-3xl px-6 py-12">
       <h1 className="text-3xl font-semibold tracking-tight">Editar post</h1>
 
       <form

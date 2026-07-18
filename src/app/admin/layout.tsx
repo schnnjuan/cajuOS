@@ -24,45 +24,41 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen">
       <nav className="border-b border-border bg-background">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-6">
-            <Link
-              href="/admin"
-              className="text-sm font-semibold tracking-tight"
-            >
-              caju<span className="text-muted">os</span>
-              <span className="ml-1.5 text-xs text-muted">admin</span>
-            </Link>
-            <div className="flex gap-4 text-sm text-muted">
-              {links.map((l) => {
-                const active =
-                  l.href === "/admin"
-                    ? pathname === "/admin"
-                    : pathname.startsWith(l.href);
-                return (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    className={`transition-colors duration-150 ease-out hover:text-foreground ${
-                      active ? "text-foreground font-medium" : ""
-                    }`}
-                  >
-                    {l.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-sm">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-5 gap-y-1 px-4 py-3 sm:px-6">
+          <Link
+            href="/admin"
+            className="shrink-0 text-sm font-semibold tracking-tight"
+          >
+            caju<span className="text-muted">os</span>
+            <span className="ml-1 text-xs text-muted">admin</span>
+          </Link>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
+            {links.map((l) => {
+              const active =
+                l.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname.startsWith(l.href);
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`py-1 transition-colors duration-150 ease-out hover:text-foreground ${
+                    active ? "font-medium text-foreground" : ""
+                  }`}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
             <Link
               href="/"
-              className="text-muted transition-colors duration-150 ease-out hover:text-foreground"
+              className="py-1 text-muted transition-colors duration-150 ease-out hover:text-foreground"
             >
               Site
             </Link>
             <a
               href="/admin/logout"
-              className="text-muted transition-colors duration-150 ease-out hover:text-red-500"
+              className="py-1 text-muted transition-colors duration-150 ease-out hover:text-red-500"
             >
               Sair
             </a>

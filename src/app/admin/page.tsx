@@ -7,19 +7,19 @@ export default function AdminDashboardPage() {
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <a
           href="/admin/blog"
-          className="rounded-md border border-border px-5 py-8 text-center transition-[color,transform] duration-150 ease-out hover:text-muted active:scale-95"
+          className="rounded-md border border-border px-4 py-6 text-center transition-[color,transform] duration-150 ease-out hover:text-muted active:scale-95 sm:px-5 sm:py-8"
         >
           <span className="text-sm font-medium">Blog</span>
         </a>
         <a
           href="/admin/tools"
-          className="rounded-md border border-border px-5 py-8 text-center transition-[color,transform] duration-150 ease-out hover:text-muted active:scale-95"
+          className="rounded-md border border-border px-4 py-6 text-center transition-[color,transform] duration-150 ease-out hover:text-muted active:scale-95 sm:px-5 sm:py-8"
         >
           <span className="text-sm font-medium">Tools</span>
         </a>
         <a
           href="/admin/changelog"
-          className="rounded-md border border-border px-5 py-8 text-center transition-[color,transform] duration-150 ease-out hover:text-muted active:scale-95"
+          className="rounded-md border border-border px-4 py-6 text-center transition-[color,transform] duration-150 ease-out hover:text-muted active:scale-95 sm:px-5 sm:py-8"
         >
           <span className="text-sm font-medium">Changelog</span>
         </a>

@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
 
   if (sent) {
     return (
-      <div className="mx-auto max-w-sm px-6 py-20 text-center">
+      <div className="mx-auto max-w-sm px-6 py-12 text-center">
         <h1 className="text-xl font-semibold tracking-tight">
           Verifique seu email
         </h1>
@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm px-6 py-20">
+    <div className="mx-auto max-w-sm px-6 py-12">
       <h1 className="text-xl font-semibold tracking-tight">Admin</h1>
       <p className="mt-1 text-sm text-muted">
         Digite seu email para receber um link de acesso.
