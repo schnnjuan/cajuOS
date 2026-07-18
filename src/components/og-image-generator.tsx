@@ -41,7 +41,6 @@ function measureAndFit(
   while (size >= 28) {
     ctx.font = `700 ${size}px ${fontFamily}`;
     if (ctx.measureText(fitted).width <= maxWidth) break;
-    // Try truncating if reducing size doesn't help enough
     if (size <= 32 && fitted.length > 10) {
       fitted = truncate(fitted, Math.max(10, fitted.length - 5));
     } else {
@@ -57,6 +56,7 @@ function drawOgImage(
   subtitle: string,
   palette: (typeof PALETTES)[number],
   fontFamily: string,
+  logoImg: HTMLImageElement | null,
 ) {
   const { bg, text, accent, watermark } = palette;
 
@@ -71,12 +71,22 @@ function drawOgImage(
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, 6);
 
+  // ── Logo ──
+  let logoRight = 0;
+  if (logoImg) {
+    const maxW = 80;
+    const scale = Math.min(1, maxW / logoImg.width);
+    const lw = logoImg.width * scale;
+    const lh = logoImg.height * scale;
+    ctx.drawImage(logoImg, 32, 32, lw, lh);
+    logoRight = 32 + lw + 16;
+  }
+
   // ── Title ──
   const displayTitle = truncate(title || "Seu título aqui", 62);
   ctx.fillStyle = text;
   ctx.textBaseline = "middle";
 
-  // Word wrap
   const words = displayTitle.split(" ");
   const lines: string[] = [];
   let currentLine = "";
@@ -98,7 +108,6 @@ function drawOgImage(
     titleLines[1] = truncate(titleLines[1], 55);
   }
 
-  // Measure longest line and scale font down if needed
   let fontSize = 64;
   for (const line of titleLines) {
     ctx.font = `700 64px ${fontFamily}`;
@@ -108,28 +117,29 @@ function drawOgImage(
     }
   }
 
-  // Apply fitted font size
   ctx.font = `700 ${fontSize}px ${fontFamily}`;
 
   const titleY = titleLines.length > 1 ? 180 : 220;
-  ctx.textAlign = "center";
+  ctx.textAlign = logoRight > 0 ? "left" : "center";
+  const titleX = logoRight > 0 ? logoRight : W / 2;
+
   if (titleLines.length === 1) {
-    ctx.fillText(titleLines[0], W / 2, titleY);
+    ctx.fillText(titleLines[0], titleX, titleY);
   } else {
     const lineHeight = Math.min(fontSize + 8, 72);
-    ctx.fillText(titleLines[0], W / 2, titleY - lineHeight / 2);
-    ctx.fillText(titleLines[1], W / 2, titleY + lineHeight / 2);
+    ctx.fillText(titleLines[0], titleX, titleY - lineHeight / 2);
+    ctx.fillText(titleLines[1], titleX, titleY + lineHeight / 2);
   }
 
   // ── Subtitle ──
   if (subtitle) {
     ctx.fillStyle = watermark;
     ctx.font = `400 28px ${fontFamily}`;
-    ctx.textAlign = "center";
+    ctx.textAlign = logoRight > 0 ? "left" : "center";
     ctx.textBaseline = "top";
     ctx.fillText(
       truncate(subtitle, 90),
-      W / 2,
+      titleX,
       titleY + (titleLines.length > 1 ? 56 : 36) + fontSize * 0.3,
     );
   }
@@ -145,11 +155,15 @@ function drawOgImage(
 // ── Component ─────────────────────────────────────────
 export default function OgImageGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [paletteId, setPaletteId] = useState("classic");
   const [fontFamily, setFontFamily] = useState("Inter, system-ui, sans-serif");
   const [downloading, setDownloading] = useState(false);
+  const [copying, setCopying] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const [logoImg, setLogoImg] = useState<HTMLImageElement | null>(null);
 
   const palette = PALETTES.find((p) => p.id === paletteId) ?? PALETTES[0];
 
@@ -168,13 +182,14 @@ export default function OgImageGenerator() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    drawOgImage(ctx, title, subtitle, palette, fontFamily);
-  }, [title, subtitle, palette, fontFamily]);
+    drawOgImage(ctx, title, subtitle, palette, fontFamily, logoImg);
+  }, [title, subtitle, palette, fontFamily, logoImg]);
 
   useEffect(() => {
     render();
   }, [render]);
 
+  // ── Download ──
   const handleDownload = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -185,7 +200,6 @@ export default function OgImageGenerator() {
       const a = document.createElement("a");
       a.href = url;
       a.download = `${slugify(title)}-og-image.png`;
-      // Append to DOM for iOS Safari compatibility
       a.style.display = "none";
       document.body.appendChild(a);
       a.click();
@@ -193,6 +207,47 @@ export default function OgImageGenerator() {
       URL.revokeObjectURL(url);
       setTimeout(() => setDownloading(false), 1500);
     }, "image/png");
+  };
+
+  // ── Copy to clipboard ──
+  const handleCopy = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      try {
+        await navigator.clipboard.write([
+          // eslint-disable-next-line @typescript-eslint/no-deprecated -- ClipboardItem suportado em todos browsers modernos
+          new ClipboardItem({ "image/png": blob }),
+        ]);
+        setCopying(true);
+        setTimeout(() => setCopying(false), 1500);
+      } catch {
+        setCopyError(true);
+        setTimeout(() => setCopyError(false), 2000);
+      }
+    }, "image/png");
+  };
+
+  // ── Logo upload ──
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        setLogoImg(img);
+        // Reset input pra permitir re-upload do mesmo arquivo
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      };
+      img.src = ev.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoImg(null);
   };
 
   return (
@@ -262,7 +317,7 @@ export default function OgImageGenerator() {
         </div>
       </div>
 
-      {/* Preview + Download */}
+      {/* Preview + Actions */}
       <div className="space-y-4">
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <canvas
@@ -273,7 +328,9 @@ export default function OgImageGenerator() {
             style={{ aspectRatio: "1200/630", display: "block", maxWidth: `${W}px` }}
           />
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Download */}
           <button
             onClick={handleDownload}
             disabled={downloading}
@@ -286,20 +343,61 @@ export default function OgImageGenerator() {
             {downloading ? "Baixando\u2026" : "Download PNG"}
           </button>
           {downloading && (
-            <span className="text-sm text-muted animate-in">
-              Pronto!
-            </span>
+            <span className="text-sm text-muted animate-in">Pronto!</span>
+          )}
+
+          {/* Copy */}
+          <button
+            onClick={handleCopy}
+            disabled={copying}
+            className={`pressable rounded-md border px-4 py-2 text-sm font-medium transition-[color,transform] duration-150 ease-out ${
+              copyError
+                ? "border-red-500 text-red-500"
+                : copying
+                  ? "border-muted text-muted"
+                  : "border-border text-foreground hover:border-foreground"
+            }`}
+          >
+            {copyError ? "Erro ao copiar" : copying ? "Copiado!" : "Copiar PNG"}
+          </button>
+
+          <span className="text-muted">|</span>
+
+          {/* Logo upload */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/svg+xml,image/webp"
+            onChange={handleLogoChange}
+            className="hidden"
+          />
+          {logoImg ? (
+            <button
+              onClick={handleRemoveLogo}
+              className="pressable rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-[color,transform] duration-150 ease-out hover:border-foreground active:scale-95"
+            >
+              Remover logo
+            </button>
+          ) : (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="pressable rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-[color,transform] duration-150 ease-out hover:border-foreground active:scale-95"
+            >
+              + Logo
+            </button>
           )}
         </div>
       </div>
 
       {/* Screen-reader status */}
-      <p
-        role="status"
-        aria-live="polite"
-        className="sr-only"
-      >
-        {downloading ? "Download iniciado" : "Pronto para download"}
+      <p role="status" aria-live="polite" className="sr-only">
+        {downloading
+          ? "Download iniciado"
+          : copying
+            ? "Imagem copiada"
+            : copyError
+              ? "Erro ao copiar"
+              : "Pronto para uso"}
       </p>
     </div>
   );
