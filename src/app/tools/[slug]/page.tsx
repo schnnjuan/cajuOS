@@ -34,7 +34,7 @@ export default async function ToolPage({
     <div className="mx-auto max-w-3xl px-6 py-20">
       <Link
         href="/tools"
-        className="text-sm text-muted hover:text-foreground"
+        className="transition-[color,transform] duration-150 ease-out text-sm text-muted hover:text-foreground active:scale-95"
       >
         ← Tools
       </Link>
@@ -64,20 +64,20 @@ export default async function ToolPage({
       <div className="mt-6 flex flex-wrap gap-4 text-sm">
         <Link
           href={`/docs/${tool.slug}`}
-          className="underline underline-offset-4 hover:text-muted"
+          className="transition-[color,transform] duration-150 ease-out underline underline-offset-4 hover:text-muted active:scale-95"
         >
           Documentação →
         </Link>
         <Link
-          href="/changelog"
-          className="underline underline-offset-4 hover:text-muted"
+          href={`/changelog#${tool.slug}`}
+          className="transition-[color,transform] duration-150 ease-out underline underline-offset-4 hover:text-muted active:scale-95"
         >
           Changelog →
         </Link>
         {tool.hasApi && (
           <Link
             href={`/docs/${tool.slug}`}
-            className="text-muted underline underline-offset-4 hover:text-foreground"
+            className="transition-[color,transform] duration-150 ease-out text-muted underline underline-offset-4 hover:text-foreground active:scale-95"
           >
             API disponível
           </Link>

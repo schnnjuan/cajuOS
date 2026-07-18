@@ -10,7 +10,7 @@ function XLogo() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border">
+    <footer>
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 px-6 py-8 text-sm text-muted sm:flex-row sm:justify-between">
         <span>cajuos.dev — uma tool por semana.</span>
 
@@ -20,7 +20,8 @@ export function SiteFooter() {
             href="https://x.com/schnnjuan"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 transition-colors hover:text-foreground"
+            aria-label="Perfil no X/Twitter"
+            className="hover-link flex items-center gap-1.5"
           >
             <span>by schnnjuan with ☕</span>
             <XLogo />
@@ -28,16 +29,16 @@ export function SiteFooter() {
         </div>
 
         <div className="flex gap-4">
-          <a href="/changelog" className="hover:text-foreground">
+          <a href="/changelog" className="hover-link">
             Changelog
           </a>
           <a
-            href="https://github.com/cajuos/cajuos"
-            className="hover:text-foreground"
+            href="https://github.com/schnnjuan/cajuOS"
+            className="hover-link"
           >
             GitHub
           </a>
-          <a href="/feed.xml" className="hover:text-foreground">
+          <a href="/feed.xml" type="application/rss+xml" className="hover-link">
             RSS
           </a>
         </div>

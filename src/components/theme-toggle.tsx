@@ -24,9 +24,13 @@ export function ThemeToggle() {
     <button
       onClick={toggle}
       aria-label="Alternar tema"
-      className="rounded-md border border-border px-2 py-1 text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+      className="rounded-md border border-border px-2 py-1 text-sm transition-[color,background-color,transform] duration-150 ease-out hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-95"
     >
-      {mounted ? (dark ? "☀" : "☾") : "☾"}
+      {mounted ? (
+        <span aria-hidden="true">{dark ? "☀" : "☾"}</span>
+      ) : (
+        <span className="invisible">·</span>
+      )}
     </button>
   );
 }

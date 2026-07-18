@@ -16,7 +16,7 @@ export default function OpengraphImage() {
           justifyContent: "center",
           background: "white",
           color: "black",
-          fontFamily: "sans-serif",
+          fontFamily: "Geist, system-ui, sans-serif",
         }}
       >
         <div style={{ fontSize: 32, color: "#71717a" }}>cajuos.dev</div>

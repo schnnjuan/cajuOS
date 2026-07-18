@@ -3,12 +3,17 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── Design tokens ── */
 :root {
   --background: #ffffff;
   --foreground: #18181b;
   --muted: #71717a;
   --border: #e4e4e7;
   --card: #ffffff;
+
+  /* Emil easing: ease-out quartico */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .dark {
@@ -27,6 +32,8 @@
   --color-card: var(--card);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
 }
 
 html {
@@ -37,4 +44,108 @@ html {
 body {
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ── Press state (microfeedback tatil) ── */
+.pressable {
+  transition: transform 160ms var(--ease-out);
+}
+/* versão que não sobrescreve outras transition-* */
+.pressable-p {
+  transition-property: transform;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-out);
+}
+.pressable:active {
+  transform: scale(0.97);
+}
+
+/* ── Hover + press combinados, so em desktop ── */
+@media (hover: hover) and (pointer: fine) {
+  .hover-link {
+    transition: color 150ms var(--ease-out), transform 160ms var(--ease-out);
+  }
+  .hover-link:hover {
+    color: var(--foreground);
+  }
+}
+.hover-link:active {
+  transform: scale(0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hover-link {
+    transition: none;
+  }
+  .hover-link:active {
+    transform: none;
+  }
+}
+
+/* ── Card hover refinado ── */
+.card-hover {
+  transition:
+    border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+.card-hover:active {
+  transform: scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    border-color: var(--foreground);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    transform: translateY(-1px);
+  }
+  .dark .card-hover:hover {
+    box-shadow: 0 1px 4px rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* ── Stagger entrance ── */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeSlideUp 500ms var(--ease-out) both;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .pressable {
+    transition: none;
+  }
+  .pressable:active {
+    transform: none;
+  }
+  .card-hover {
+    transition: none;
+  }
+  .card-hover:hover {
+    transform: none;
+  }
+  .card-hover:active {
+    transform: none;
+  }
+  .animate-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Focus visible ── */
+*:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+  border-radius: 2px;
 }

@@ -16,6 +16,7 @@ export const TOTAL_PLANNED = "∞";
 
 // Texto "Tool #N de ∞" — dinâmico conforme quantas tools foram adicionadas.
 export function toolProgressLabel(): string {
+  if (tools.length === 0) return "Em breve…";
   return `Tool #${tools.length} de ${TOTAL_PLANNED}`;
 }
 

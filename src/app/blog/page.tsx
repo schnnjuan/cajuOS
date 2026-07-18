@@ -19,9 +19,9 @@ export default function BlogIndex() {
       <ul className="mt-10 divide-y divide-border">
         {posts.map((p) => (
           <li key={p.slug} className="py-5">
-            <Link href={`/blog/${p.slug}`} className="group block">
+            <Link href={`/blog/${p.slug}`} className="block transition-[color,transform] duration-150 ease-out hover:text-muted active:scale-95">
               <div className="flex items-baseline justify-between gap-4">
-                <h2 className="font-medium tracking-tight group-hover:underline">
+                <h2 className="font-medium tracking-tight">
                   {p.title}
                 </h2>
                 {p.date && (
@@ -35,7 +35,7 @@ export default function BlogIndex() {
           </li>
         ))}
         {posts.length === 0 && (
-          <li className="py-5 text-muted">Nenhum post ainda.</li>
+          <li className="animate-in py-5 text-muted">Nenhum post ainda.</li>
         )}
       </ul>
     </div>

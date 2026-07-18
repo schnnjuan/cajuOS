@@ -19,7 +19,7 @@ export default function Home() {
         <div>
           <Link
             href="/tools"
-            className="text-sm font-medium underline underline-offset-4 hover:text-muted"
+            className="text-sm font-medium underline underline-offset-4 transition-[color,transform] duration-150 ease-out hover:text-muted active:scale-95"
           >
             Ver todas as tools →
           </Link>

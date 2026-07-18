@@ -21,7 +21,7 @@ export default async function ChangelogPage() {
           const raw = readMdx("changelog", e.slug);
           if (!raw) return null;
           return (
-            <section key={e.slug}>
+            <section key={e.slug} id={e.slug}>
               <h2 className="text-lg font-medium tracking-tight">
                 {e.title}
               </h2>
@@ -29,7 +29,7 @@ export default async function ChangelogPage() {
             </section>
           );
         })}
-        {entries.length === 0 && <p className="text-muted">Nada ainda.</p>}
+        {entries.length === 0 && <p className="animate-in text-muted">Nada ainda.</p>}
       </div>
     </div>
   );
