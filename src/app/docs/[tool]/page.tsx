@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { compileMDX } from "next-mdx-remote/rsc";
-import { contentSlugs, readMdx } from "@/lib/content";
+import { contentSlugs, readMdx, stripFrontmatter } from "@/lib/content";
 import { toolBySlug } from "@/lib/tools";
+import { mdxComponents } from "@/components/mdx";
 
 export function generateStaticParams() {
   return contentSlugs("docs").map((tool) => ({ tool }));
@@ -52,7 +53,10 @@ export default async function DocsPage({
 }
 
 async function DocsContent({ source }: { source: string }) {
-  const { content } = await compileMDX({ source });
+  const { content } = await compileMDX({
+    source: stripFrontmatter(source),
+    components: mdxComponents,
+  });
   return (
     <div className="prose prose-zinc mt-8 max-w-none dark:prose-invert">
       {content}

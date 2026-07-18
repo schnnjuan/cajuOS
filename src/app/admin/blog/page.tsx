@@ -1,4 +1,5 @@
 import { listContentItems } from "@/lib/admin-content";
+import { toolBySlug } from "@/lib/tools";
 import Link from "next/link";
 
 export default function AdminBlogPage() {
@@ -17,26 +18,34 @@ export default function AdminBlogPage() {
       </div>
 
       <ul className="mt-8 divide-y divide-border">
-        {items.map((p) => (
-          <li key={p.slug} className="flex items-center justify-between py-4">
-            <div>
-              <Link
-                href={`/admin/blog/${p.slug}/edit`}
-                className="font-medium transition-colors duration-150 ease-out hover:text-muted"
-              >
-                {p.title}
-              </Link>
-              <div className="mt-0.5 flex items-center gap-2 text-sm text-muted">
-                <span>{p.date}</span>
-                {p.draft && (
-                  <span className="rounded bg-yellow-500/20 px-1.5 py-0.5 text-xs text-yellow-600 dark:text-yellow-400">
-                    Rascunho
-                  </span>
-                )}
+        {items.map((p) => {
+          const tool = p.tool ? toolBySlug(p.tool) : null;
+          return (
+            <li key={p.slug} className="flex items-center justify-between py-4">
+              <div>
+                <Link
+                  href={`/admin/blog/${p.slug}/edit`}
+                  className="font-medium transition-colors duration-150 ease-out hover:text-muted"
+                >
+                  {p.title}
+                </Link>
+                <div className="mt-0.5 flex items-center gap-2 text-sm text-muted">
+                  <span>{p.date}</span>
+                  {tool && (
+                    <span className="rounded bg-accent/10 px-1.5 py-0.5 text-xs text-accent">
+                      {tool.name}
+                    </span>
+                  )}
+                  {p.draft && (
+                    <span className="rounded bg-yellow-500/20 px-1.5 py-0.5 text-xs text-yellow-600 dark:text-yellow-400">
+                      Rascunho
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
         {items.length === 0 && (
           <li className="py-10 text-center text-muted">Nenhum post ainda.</li>
         )}

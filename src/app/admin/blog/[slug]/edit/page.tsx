@@ -3,6 +3,7 @@
 import { use, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
+import { tools } from "@/lib/tools";
 
 function slugify(text: string): string {
   return text
@@ -31,6 +32,7 @@ export default function EditPostPage({
   const [title, setTitle] = useState("");
   const [currentSlug, setCurrentSlug] = useState(slug);
   const [description, setDescription] = useState("");
+  const [toolSlug, setToolSlug] = useState("");
   const [date, setDate] = useState("");
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
@@ -43,6 +45,7 @@ export default function EditPostPage({
     setTitle(data.title ?? slug);
     setCurrentSlug(data.slug ?? slug);
     setDescription(data.description ?? "");
+    setToolSlug(data.tool ?? "");
     setDate(data.date ?? "");
     setBody(data.body ?? "");
     setLoaded(true);
@@ -74,6 +77,7 @@ export default function EditPostPage({
           date,
           body,
           draft,
+          tool: toolSlug || undefined,
         }),
       });
 
@@ -149,6 +153,22 @@ export default function EditPostPage({
             onChange={(e) => setDescription(e.target.value)}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm text-muted">Tool relacionada</label>
+          <select
+            value={toolSlug}
+            onChange={(e) => setToolSlug(e.target.value)}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+          >
+            <option value="">Nenhuma</option>
+            {tools.map((t) => (
+              <option key={t.slug} value={t.slug}>
+                {t.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { tools } from "@/lib/tools";
 
 function slugify(text: string): string {
   return text
@@ -49,10 +50,10 @@ export default function NewChangelogPage() {
           type: "changelog",
           slug: slug || slugify(title),
           title: title.trim(),
-          description: toolSlug.trim() || undefined,
           date,
           body,
           draft,
+          tool: toolSlug || undefined,
         }),
       });
 
@@ -105,15 +106,19 @@ export default function NewChangelogPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm text-muted">
-            Tool slug (opcional)
-          </label>
-          <input
+          <label className="mb-1 block text-sm text-muted">Tool</label>
+          <select
             value={toolSlug}
             onChange={(e) => setToolSlug(e.target.value)}
-            placeholder="ex: json-formatter"
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
-          />
+          >
+            <option value="">Nenhuma</option>
+            {tools.map((t) => (
+              <option key={t.slug} value={t.slug}>
+                {t.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

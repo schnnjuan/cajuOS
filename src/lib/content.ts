@@ -8,6 +8,7 @@ export type ContentMeta = {
   title: string;
   description?: string;
   date?: string;
+  tool?: string;
 };
 
 function readMeta(dir: string, file: string): ContentMeta | null {
@@ -18,11 +19,13 @@ function readMeta(dir: string, file: string): ContentMeta | null {
   const titleMatch = raw.match(/^title:\s*(.+)$/m);
   const descMatch = raw.match(/^description:\s*(.+)$/m);
   const dateMatch = raw.match(/^date:\s*(.+)$/m);
+  const toolMatch = raw.match(/^tool:\s*(.+)$/m);
   return {
     slug,
     title: titleMatch ? titleMatch[1].trim() : slug,
     description: descMatch ? descMatch[1].trim() : undefined,
     date: dateMatch ? dateMatch[1].trim() : undefined,
+    tool: toolMatch ? toolMatch[1].trim() : undefined,
   };
 }
 
@@ -50,4 +53,18 @@ export function readMdx(dir: string, slug: string): string | null {
   const full = path.join(CONTENT_DIR, dir, `${slug}.mdx`);
   if (!fs.existsSync(full)) return null;
   return fs.readFileSync(full, "utf8");
+}
+
+export function contentByTool(dir: string, toolSlug: string): ContentMeta[] {
+  return listContent(dir).filter((c) => c.tool === toolSlug);
+}
+
+export function stripFrontmatter(raw: string): string {
+  return raw.replace(/^---[\s\S]*?---\n?/, "");
+}
+
+export function readMdxMeta(dir: string, slug: string): ContentMeta | null {
+  const full = path.join(CONTENT_DIR, dir, `${slug}.mdx`);
+  if (!fs.existsSync(full)) return null;
+  return readMeta(dir, `${slug}.mdx`);
 }

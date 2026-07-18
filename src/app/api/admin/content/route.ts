@@ -10,6 +10,7 @@ type Body = {
   date?: string;
   body?: string;
   draft?: boolean;
+  tool?: string;
 };
 
 /* GET /api/admin/content?type=blog[&slug=hello] */
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
       body: body.body,
       draft: body.draft ?? false,
       originalSlug: body.originalSlug,
+      tool: body.tool,
     });
     return NextResponse.json(result);
   } catch (err) {

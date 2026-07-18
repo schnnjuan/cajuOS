@@ -11,6 +11,7 @@ export type ContentItem = {
   description?: string;
   date: string;
   draft: boolean;
+  tool?: string;
 };
 
 export type ContentDetail = ContentItem & { body: string };
@@ -112,6 +113,7 @@ export function listContentItems(type: string): ContentItem[] {
         description: frontmatter.description,
         date: frontmatter.date || "",
         draft: dir.startsWith("_drafts"),
+        tool: frontmatter.tool,
       });
     }
   }
@@ -131,6 +133,7 @@ export function readContentItem(type: string, slug: string): ContentDetail | nul
     description: frontmatter.description,
     date: frontmatter.date || "",
     draft: isDraft(type, slug),
+    tool: frontmatter.tool,
     body,
   };
 }
@@ -144,6 +147,7 @@ export async function saveContent(opts: {
   body: string;
   draft: boolean;
   originalSlug?: string;
+  tool?: string;
 }): Promise<{ ok: boolean; slug: string }> {
   const dir = opts.draft ? `_drafts/${opts.type}` : opts.type;
   const filename = `${opts.slug}.mdx`;
@@ -153,6 +157,7 @@ export async function saveContent(opts: {
     date: opts.date,
   };
   if (opts.description) fm.description = opts.description;
+  if (opts.tool) fm.tool = opts.tool;
 
   const fileContent = buildFrontmatter(fm) + opts.body.trim();
 

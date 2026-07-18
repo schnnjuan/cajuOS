@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { use, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import { tools } from "@/lib/tools";
 
 function slugify(text: string): string {
@@ -14,25 +15,43 @@ function slugify(text: string): string {
     .slice(0, 80);
 }
 
-function today(): string {
-  return new Date().toISOString().split("T")[0];
-}
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-export default function NewPostPage() {
+export default function EditChangelogPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = use(params);
   const router = useRouter();
-  const [slug, setSlug] = useState("");
+  const { data, error: loadErr, isLoading } = useSWR(
+    `/api/admin/content?type=changelog&slug=${slug}`,
+    fetcher,
+  );
+
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [currentSlug, setCurrentSlug] = useState(slug);
   const [toolSlug, setToolSlug] = useState("");
-  const [date, setDate] = useState(today());
+  const [date, setDate] = useState("");
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  // Fill form when data arrives
+  if (data && !loaded) {
+    setTitle(data.title ?? slug);
+    setCurrentSlug(data.slug ?? slug);
+    setToolSlug(data.tool ?? "");
+    setDate(data.date ?? "");
+    setBody(data.body ?? "");
+    setLoaded(true);
+  }
 
   function handleTitleChange(v: string) {
     setTitle(v);
-    if (!slugEdited) setSlug(slugify(v));
+    if (!slugEdited) setCurrentSlug(slugify(v));
   }
 
   async function save(draft: boolean) {
@@ -48,10 +67,10 @@ export default function NewPostPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "blog",
-          slug: slug || slugify(title),
+          type: "changelog",
+          slug: currentSlug || slugify(title),
+          originalSlug: currentSlug !== slug ? slug : undefined,
           title: title.trim(),
-          description: description.trim() || undefined,
           date,
           body,
           draft,
@@ -64,7 +83,7 @@ export default function NewPostPage() {
         throw new Error(err.error ?? "Erro ao salvar");
       }
 
-      router.push("/admin/blog");
+      router.push("/admin/changelog");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao salvar");
@@ -72,9 +91,28 @@ export default function NewPostPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <p className="text-muted">Carregando…</p>
+      </div>
+    );
+  }
+
+  if (loadErr || !data) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <p className="text-red-500">Erro ao carregar entrada.</p>
+        <a href="/admin/changelog" className="mt-4 block text-sm text-muted underline">
+          ← Voltar
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">Novo post</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Editar entrada</h1>
 
       <form
         onSubmit={(e: FormEvent) => {
@@ -96,26 +134,17 @@ export default function NewPostPage() {
         <div>
           <label className="mb-1 block text-sm text-muted">Slug</label>
           <input
-            value={slug}
+            value={currentSlug}
             onChange={(e) => {
-              setSlug(e.target.value);
+              setCurrentSlug(e.target.value);
               setSlugEdited(true);
             }}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono text-muted outline-none focus:border-foreground"
+            className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm text-muted outline-none focus:border-foreground"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm text-muted">Descrição</label>
-          <input
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm text-muted">Tool relacionada</label>
+          <label className="mb-1 block text-sm text-muted">Tool</label>
           <select
             value={toolSlug}
             onChange={(e) => setToolSlug(e.target.value)}
@@ -147,7 +176,7 @@ export default function NewPostPage() {
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            rows={18}
+            rows={14}
             className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-foreground"
           />
         </div>

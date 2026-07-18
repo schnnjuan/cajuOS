@@ -2,46 +2,57 @@
 title: OG Image Generator
 date: 2026-07-24
 description: Gere imagens Open Graph 1200×630 diretamente no navegador.
+tool: og-image
 ---
+
+Gera imagens Open Graph prontas pra compartilhar. Rápido, sem cadastro, sem editor gráfico.
 
 ## Como usar
 
-1. Acesse [/tools/og-image](/tools/og-image)
-2. Preencha o campo **Título** (obrigatório, até 65 caracteres)
-3. Preencha o campo **Subtítulo** (opcional, até 95 caracteres)
-4. Selecione uma das 5 **paletas** de cor
-5. Visualize o preview ao vivo
+<Command>cajuos.dev/tools/og-image</Command>
+
+1. Acesse a tool
+2. Digite o **Título** (obrigatório, até 65 caracteres)
+3. Digite o **Subtítulo** (opcional, até 95 caracteres)
+4. Escolha uma **paleta**
+5. Veja o preview ao vivo
 6. Clique em **Download PNG**
 
-A imagem gerada tem exatamente 1200×630 pixels, formato PNG.
+A imagem sai em 1200×630 PNG — tamanho exato que Twitter, LinkedIn, Discord e WhatsApp esperam.
 
 ## Paletas
 
-| Paleta | Fundo | Texto | Indicação |
-|---|---|---|---|
-| Classic | Branco | Preto | Uso geral, clean |
-| Slate | Cinza claro | Preto | Posts sérios, tech |
-| Warm | Off-white | Marrom | Conteúdo criativo |
-| Minimal | Preto | Branco | Contraste alto |
-| Deep | Preto | Roxo claro | Visual moderno |
+<PaletteGrid />
 
 ## Marca d'água
 
-Toda imagem gerada inclui a marca `cajuos.dev` no canto inferior direito. Não é removível — é a forma da ferramenta se distribuir organicamente.
+Toda imagem inclui `cajuos.dev` no canto inferior direito — sutil, menos de 5% da área. Não removível.
 
-## Limitações
+<Callout type="tip">
+  Paleta **Minimal** + fundo preto = marca quase invisível.
+</Callout>
 
-- Sem upload de logo ou imagem de fundo (previsto pra v2)
-- Sem API endpoint (previsto pra v2)
-- Sem histórico ou login
+## v2 (futuro)
+
+- Upload de logo e imagem de fundo
+- API endpoint
+- Histórico e login
 
 ## Stack
 
-- Canvas API (`toBlob()` pra exportar PNG)
-- Next.js 16 (App Router)
-- Tailwind v4
-- Zero dependências externas
+Canvas API, Next.js 16, Tailwind v4, zero dependências.
 
 ## Código
 
-Tool open source no [GitHub](https://github.com/schnnjuan/cajuOS).
+<Command>npx degit schnnjuan/cajuOS/tools/og-image my-og-tool</Command>
+
+```ts
+const canvas = document.createElement("canvas");
+canvas.width = 1200;
+canvas.height = 630;
+const ctx = canvas.getContext("2d")!;
+ctx.fillStyle = "#ffffff";
+ctx.fillRect(0, 0, 1200, 630);
+```
+
+Open source no [GitHub](https://github.com/schnnjuan/cajuOS).
