@@ -20,7 +20,8 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 bg-background">
       <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-lg font-semibold tracking-tight">
-          caju<span className="text-muted">os</span>
+          caju<span className="text-accent">os</span>
+          <span className="hidden sm:inline text-accent">.dev</span>
         </Link>
         <nav className="flex items-center gap-5 text-sm text-muted">
           {nav.map((n) => (

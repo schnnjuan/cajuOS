@@ -14,7 +14,7 @@ export function ToolCard({ tool, index }: { tool: Tool; index: number }) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <h3 className="font-medium tracking-tight">{tool.name}</h3>
-          <span className="text-xs text-muted">#{index + 1}</span>
+          <span className="text-xs text-accent">#{index + 1}</span>
         </div>
         <p className="mt-1 text-sm text-muted">{tool.tagline}</p>
         {tool.hasApi && (

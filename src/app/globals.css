@@ -10,6 +10,7 @@
   --muted: #71717a;
   --border: #e4e4e7;
   --card: #ffffff;
+  --accent: #880808;
 
   /* Emil easing: ease-out quartico */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -22,6 +23,7 @@
   --muted: #a1a1aa;
   --border: #27272a;
   --card: #111111;
+  --accent: #dc2626;
 }
 
 @theme inline {
@@ -30,6 +32,7 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-card: var(--card);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --ease-out: var(--ease-out);
