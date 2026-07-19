@@ -36,14 +36,14 @@ export default async function DocsPage({
   const raw = readMdx("docs", tool);
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-20">
-      <p className="text-sm text-muted">{t.name}</p>
-      <h1 className="mt-1 text-3xl font-semibold tracking-tight">Docs</h1>
+    <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-20">
+      <p className="text-xs text-muted sm:text-sm">{t.name}</p>
+      <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Docs</h1>
       {raw ? (
         <DocsContent source={raw} />
       ) : (
-        <div className="animate-in mt-8 rounded-xl border border-border bg-card p-8 text-center">
-          <p className="text-muted">
+        <div className="animate-in mt-8 rounded-xl border border-border bg-card p-6 text-center sm:p-8">
+          <p className="text-sm text-muted">
             Documentação em breve.
           </p>
         </div>

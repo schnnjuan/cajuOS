@@ -48,9 +48,9 @@ export function Callout({
 
 export function Command({ children }: { children: ReactNode }) {
   return (
-    <div className="my-4 overflow-x-auto rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm dark:border-zinc-700 dark:bg-black">
+    <div className="my-5 overflow-x-auto rounded-lg border border-border bg-zinc-900 px-3 py-2.5 text-xs sm:px-4 sm:py-3 sm:text-sm dark:border-border dark:bg-black">
       <div className="flex items-center gap-2 font-mono">
-        <span className="text-emerald-500 shrink-0">$</span>
+        <span className="shrink-0 text-emerald-500">$</span>
         <span className="text-zinc-100">{children}</span>
       </div>
     </div>
