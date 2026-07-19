@@ -20,47 +20,63 @@ const SIZE_PRESETS = [
 type LayoutMode = "center" | "left";
 type Format = "png" | "jpeg" | "webp";
 
-// ── SVG decor icons (inline) ───────────────────────────
+// ── Decor icons (SVG path data for canvas Path2D) ──────
 interface DecorIconDef {
   id: string;
-  svg: string;
+  path: string;
 }
 
 const DECOR_ICONS: DecorIconDef[] = [
-  { id: "flame",  svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>` },
-  { id: "target", svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>` },
-  { id: "star",   svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
-  { id: "bulb",   svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>` },
-  { id: "rocket", svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>` },
-  { id: "pin",    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>` },
-  { id: "palette",svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.42-4.5-8-10-8Z"/></svg>` },
-  { id: "sparkle",svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.132 2.102.786 4.04 1.873 5.652C14.96 10.264 16.4 11.4 18 12c-1.6.6-3.04 1.736-4.127 3.348C12.786 16.96 12.132 18.898 12 21c-.132-2.102-.786-4.04-1.873-5.652C9.04 13.736 7.6 12.6 6 12c1.6-.6 3.04-1.736 4.127-3.348C11.214 7.04 11.868 5.102 12 3Z"/></svg>` },
-  { id: "diamond",svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41L13.7 2.71a2.41 2.41 0 0 0-3.41 0Z"/></svg>` },
-  { id: "bolt",   svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>` },
+  {
+    id: "flame",
+    path: "M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z",
+  },
+  {
+    id: "target",
+    path: "M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0M6 12a6 6 0 1 0 12 0a6 6 0 1 0-12 0M10 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0",
+  },
+  {
+    id: "star",
+    path: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+  },
+  {
+    id: "bulb",
+    path: "M9 18h6M10 22h4M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14",
+  },
+  {
+    id: "rocket",
+    path: "M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2zM9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5",
+  },
+  {
+    id: "pin",
+    path: "M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0zM9 10a3 3 0 1 0 6 0a3 3 0 1 0-6 0",
+  },
+  {
+    id: "palette",
+    path: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.42-4.5-8-10-8zM13 6.5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0M17 10.5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0M8 7.5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0M6 12.5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0",
+  },
+  {
+    id: "sparkle",
+    path: "M12 3c.132 2.102.786 4.04 1.873 5.652C14.96 10.264 16.4 11.4 18 12c-1.6.6-3.04 1.736-4.127 3.348C12.786 16.96 12.132 18.898 12 21c-.132-2.102-.786-4.04-1.873-5.652C9.04 13.736 7.6 12.6 6 12c1.6-.6 3.04-1.736 4.127-3.348C11.214 7.04 11.868 5.102 12 3z",
+  },
+  {
+    id: "diamond",
+    path: "M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41L13.7 2.71a2.41 2.41 0 0 0-3.41 0z",
+  },
+  {
+    id: "bolt",
+    path: "M13 2 3 14 12 14 11 22 21 10 12 10 13 2z",
+  },
 ];
 
 const DECOR_ICON_MAP = new Map(DECOR_ICONS.map((d) => [d.id, d]));
 
-// Social presets use icon ids instead of emoji
+// Social presets use icon ids
 const SOCIAL_PRESETS: Record<string, { size: number; layout: "center" | "left"; palette: string; icon: string; label: string }> = {
   twitter:  { size: 0, layout: "center", palette: "classic", icon: "flame",  label: "Twitter" },
   linkedin: { size: 0, layout: "left",   palette: "slate",   icon: "pin",    label: "LinkedIn" },
   blog:     { size: 0, layout: "center", palette: "warm",    icon: "sparkle",label: "Blog" },
 };
-
-// ── SVG → Image cache ─────────────────────────────────
-function svgToDataUri(svg: string): string {
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-}
-
-function loadSvgImage(svg: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = svgToDataUri(svg);
-  });
-}
 
 // Seeded PRNG (mulberry32)
 function mulberry32(a: number): () => number {
@@ -137,47 +153,72 @@ function drawBgImage(ctx: CanvasRenderingContext2D, img: HTMLImageElement, W: nu
   }
 }
 
-// ── Procedural background ──────────────────────────────
+// ── Procedural background (improved) ───────────────────
 function drawProceduralBg(ctx: CanvasRenderingContext2D, W: number, H: number, seed: number) {
   const rng = mulberry32(seed);
   const s = W / 1200;
+  const baseHue = rng() * 360;
 
-  const angle = rng() * 360;
-  const gx = Math.cos((angle * Math.PI) / 180) * W;
-  const gy = Math.sin((angle * Math.PI) / 180) * H;
-  const grad = ctx.createLinearGradient(W / 2 - gx / 2, H / 2 - gy / 2, W / 2 + gx / 2, H / 2 + gy / 2);
-  const c1 = `hsl(${rng() * 360}, ${40 + rng() * 40}%, ${55 + rng() * 30}%)`;
-  const c2 = `hsl(${rng() * 360}, ${40 + rng() * 40}%, ${40 + rng() * 30}%)`;
-  const c3 = `hsl(${rng() * 360}, ${40 + rng() * 40}%, ${30 + rng() * 30}%)`;
-  grad.addColorStop(0, c1);
-  grad.addColorStop(0.5, c2);
-  grad.addColorStop(1, c3);
+  // 1. Base gradient — deep, smooth, dark-toned
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, `hsl(${baseHue}, ${40 + rng() * 20}%, ${12 + rng() * 8}%)`);
+  grad.addColorStop(0.5, `hsl(${(baseHue + 30 + rng() * 40) % 360}, ${35 + rng() * 20}%, ${10 + rng() * 6}%)`);
+  grad.addColorStop(1, `hsl(${(baseHue + 60 + rng() * 50) % 360}, ${30 + rng() * 20}%, ${7 + rng() * 5}%)`);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  const circleCount = 6 + Math.round(rng() * 10);
-  for (let i = 0; i < circleCount; i++) {
-    const x = rng() * W;
-    const y = rng() * H;
-    const r = (30 + rng() * 160) * s;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `hsla(${rng() * 360}, ${50 + rng() * 30}%, ${60 + rng() * 20}%, ${0.08 + rng() * 0.15})`;
-    ctx.fill();
+  // 2. Large accent blob — radial burst of color
+  const bx = 0.2 + rng() * 0.5;
+  const by = 0.3 + rng() * 0.4;
+  const br = (0.35 + rng() * 0.35) * Math.min(W, H);
+  const bg = ctx.createRadialGradient(W * bx, H * by, 0, W * bx, H * by, br);
+  bg.addColorStop(0, `hsla(${(baseHue + 60 + rng() * 80) % 360}, ${60 + rng() * 30}%, ${35 + rng() * 20}%, 0.35)`);
+  bg.addColorStop(0.5, `hsla(${(baseHue + 80 + rng() * 80) % 360}, ${50 + rng() * 30}%, ${30 + rng() * 15}%, 0.15)`);
+  bg.addColorStop(1, `hsla(${(baseHue + 100 + rng() * 80) % 360}, ${40 + rng() * 30}%, ${20 + rng() * 15}%, 0)`);
+  ctx.fillStyle = bg;
+  ctx.beginPath();
+  ctx.arc(W * bx, H * by, br, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. Dot grid with jitter
+  const dotSize = Math.round((2 + rng() * 2) * s);
+  const spacing = Math.round((35 + rng() * 25) * s);
+  const dotHue = (baseHue + 140 + rng() * 80) % 360;
+  for (let gx = spacing; gx < W; gx += spacing) {
+    for (let gy = spacing; gy < H; gy += spacing) {
+      const jx = gx + (rng() - 0.5) * spacing * 0.3;
+      const jy = gy + (rng() - 0.5) * spacing * 0.3;
+      ctx.beginPath();
+      ctx.arc(jx, jy, dotSize, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${dotHue}, 50%, ${60 + rng() * 20}%, ${0.12 + rng() * 0.12})`;
+      ctx.fill();
+    }
   }
 
-  const rectCount = 2 + Math.round(rng() * 5);
-  for (let i = 0; i < rectCount; i++) {
-    const x = rng() * W;
-    const y = rng() * H;
-    const w = (60 + rng() * 180) * s;
-    const h = (60 + rng() * 180) * s;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rng() * Math.PI * 2);
-    ctx.fillStyle = `hsla(${rng() * 360}, ${40 + rng() * 30}%, ${50 + rng() * 20}%, ${0.05 + rng() * 0.1})`;
-    ctx.fillRect(-w / 2, -h / 2, w, h);
-    ctx.restore();
+  // 4. Diagonal streaks
+  ctx.lineCap = "round";
+  for (let i = 0; i < 4 + Math.round(rng() * 3); i++) {
+    const off = rng() * (W + H) * 0.7;
+    ctx.beginPath();
+    ctx.moveTo(-off, 0);
+    ctx.lineTo(W - off, H);
+    ctx.strokeStyle = `hsla(${baseHue}, 30%, ${55 + rng() * 20}%, ${0.04 + rng() * 0.04})`;
+    ctx.lineWidth = (0.5 + rng() * 1.5) * s;
+    ctx.stroke();
+  }
+
+  // 5. Small glowing accent circles
+  for (let i = 0; i < 3 + Math.round(rng() * 3); i++) {
+    const cx = rng() * W;
+    const cy = rng() * H;
+    const cr = (10 + rng() * 25) * s;
+    const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr);
+    cg.addColorStop(0, `hsla(${(baseHue + 120 + rng() * 100) % 360}, ${70 + rng() * 30}%, ${60 + rng() * 20}%, ${0.08 + rng() * 0.06})`);
+    cg.addColorStop(1, `hsla(${(baseHue + 120 + rng() * 100) % 360}, ${70 + rng() * 30}%, ${60 + rng() * 20}%, 0)`);
+    ctx.fillStyle = cg;
+    ctx.beginPath();
+    ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
@@ -193,7 +234,7 @@ function drawOgImage(
   bgImg: HTMLImageElement | null,
   layout: LayoutMode,
   overlay: number,
-  decorIconImg: HTMLImageElement | null,
+  decorIconId: string,
   proceduralSeed: number | null,
 ) {
   const { bg, text, accent, watermark } = palette;
@@ -236,20 +277,24 @@ function drawOgImage(
   const titleX = forceLeft && logoRight > 0 ? logoRight : forceLeft ? pad : W / 2;
   const textAlign: CanvasTextAlign = forceLeft ? "left" : "center";
 
-  // ── Decor icon (SVG rendered as Image) ──
-  if (decorIconImg) {
-    const iconSize = Math.round(56 * s * Math.min(1, H / 630));
-    const decorY = isSquare ? Math.round(H * 0.22) : Math.round(H * 0.14);
-    // Recolor SVG to match text color — apply via canvas global tint
-    ctx.save();
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.drawImage(decorIconImg, W / 2 - iconSize / 2, decorY - iconSize, iconSize, iconSize);
-    // Overlay with palette text color for tint
-    ctx.globalCompositeOperation = "source-atop";
-    ctx.fillStyle = text;
-    ctx.fillRect(W / 2 - iconSize / 2, decorY - iconSize, iconSize, iconSize);
-    ctx.restore();
+  // ── Decor icon (Path2D) ──
+  if (decorIconId) {
+    const iconDef = DECOR_ICON_MAP.get(decorIconId);
+    if (iconDef) {
+      const iconSize = Math.round(52 * s * Math.min(1, H / 630));
+      const decorY = isSquare ? Math.round(H * 0.22) : Math.round(H * 0.14);
+      const half = iconSize / 2;
+      ctx.save();
+      ctx.translate(W / 2 - half, decorY - iconSize);
+      ctx.scale(iconSize / 24, iconSize / 24);
+      ctx.strokeStyle = text;
+      ctx.lineWidth = 1.6;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      const path = new Path2D(iconDef.path);
+      ctx.stroke(path);
+      ctx.restore();
+    }
   }
 
   // ── Title ──
@@ -336,8 +381,6 @@ export default function OgImageGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
-  const iconCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
-  const pendingIconRef = useRef<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -352,7 +395,6 @@ export default function OgImageGenerator() {
   const [bgImg, setBgImg] = useState<HTMLImageElement | null>(null);
   const [overlay, setOverlay] = useState(0.35);
   const [decorIcon, setDecorIcon] = useState("");
-  const [decorIconImg, setDecorIconImg] = useState<HTMLImageElement | null>(null);
   const [format, setFormat] = useState<Format>("png");
   const [proceduralSeed, setProceduralSeed] = useState<number | null>(null);
 
@@ -361,31 +403,6 @@ export default function OgImageGenerator() {
   const H = sizePreset.h;
   const palette = PALETTES.find((p) => p.id === paletteId) ?? PALETTES[0];
   const showEmojiWarning = hasEmoji(title) || hasEmoji(subtitle);
-
-  // ── Load decor icon SVG into Image ──
-  useEffect(() => {
-    if (!decorIcon) {
-      setDecorIconImg(null);
-      return;
-    }
-    const cached = iconCacheRef.current.get(decorIcon);
-    if (cached) {
-      setDecorIconImg(cached);
-      return;
-    }
-    const def = DECOR_ICON_MAP.get(decorIcon);
-    if (!def) {
-      setDecorIconImg(null);
-      return;
-    }
-    pendingIconRef.current = decorIcon;
-    loadSvgImage(def.svg).then((img) => {
-      iconCacheRef.current.set(decorIcon, img);
-      if (pendingIconRef.current === decorIcon) {
-        setDecorIconImg(img);
-      }
-    });
-  }, [decorIcon]);
 
   // Resolve font-family
   useEffect(() => {
@@ -435,8 +452,8 @@ export default function OgImageGenerator() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIconImg, proceduralSeed);
-  }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIconImg, proceduralSeed]);
+    drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed);
+  }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed]);
 
   useEffect(() => {
     render();
@@ -530,6 +547,9 @@ export default function OgImageGenerator() {
     setBgImg(null);
     setProceduralSeed(Math.floor(Math.random() * 2147483647));
   };
+
+  const iconSvgForPreview = (d: DecorIconDef, isActive: boolean): string =>
+    `<svg viewBox="0 0 24 24" fill="none" stroke="${isActive ? 'currentColor' : 'currentColor'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${d.path}"/></svg>`;
 
   return (
     <div className="space-y-6">
@@ -635,7 +655,7 @@ export default function OgImageGenerator() {
         </div>
       </div>
 
-      {/* Decor icon (SVG) */}
+      {/* Decor icon (SVG buttons + canvas via Path2D) */}
       <div>
         <label className="text-sm font-medium">Ícone decorativo</label>
         <div className="mt-1 flex flex-wrap gap-2">
@@ -651,7 +671,7 @@ export default function OgImageGenerator() {
               }`}
             >
               <span className="inline-block h-4 w-4"
-                dangerouslySetInnerHTML={{ __html: d.svg.replace('<svg', `<svg fill="${decorIcon === d.id ? 'currentColor' : 'none'}" stroke="${decorIcon === d.id ? 'currentColor' : 'currentColor'}"`) }}
+                dangerouslySetInnerHTML={{ __html: iconSvgForPreview(d, decorIcon === d.id) }}
               />
               {d.id.charAt(0).toUpperCase() + d.id.slice(1)}
             </button>
