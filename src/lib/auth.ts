@@ -4,7 +4,9 @@ const COOKIE_NAME = "cajuos_session";
 const ADMIN_EMAIL = () => process.env.ADMIN_EMAIL ?? "";
 
 function getSecret(): Uint8Array {
-  return new TextEncoder().encode(process.env.JWT_SECRET!);
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error("JWT_SECRET environment variable is not set");
+  return new TextEncoder().encode(secret);
 }
 
 export type TokenPayload = { email: string };

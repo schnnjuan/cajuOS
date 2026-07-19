@@ -1,5 +1,17 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { listContentItems, readContentItem, saveContent } from "@/lib/admin-content";
+import { verifyToken, COOKIE_NAME, isAdminEmail } from "@/lib/auth";
+
+async function requireAdmin(): Promise<NextResponse | null> {
+  const store = await cookies();
+  const token = store.get(COOKIE_NAME)?.value;
+  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const payload = await verifyToken(token);
+  if (!payload || !isAdminEmail(payload.email))
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  return null;
+}
 
 type Body = {
   type: string;
@@ -15,6 +27,9 @@ type Body = {
 
 /* GET /api/admin/content?type=blog[&slug=hello] */
 export async function GET(request: Request) {
+  const err = await requireAdmin();
+  if (err) return err;
+
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");
   const slug = searchParams.get("slug");
@@ -37,6 +52,9 @@ export async function GET(request: Request) {
 
 /* POST /api/admin/content  —  save (create or update) */
 export async function POST(request: Request) {
+  const err = await requireAdmin();
+  if (err) return err;
+
   const body = (await request.json()) as Body;
 
   if (!body.type || !body.slug || !body.title || body.body === undefined) {

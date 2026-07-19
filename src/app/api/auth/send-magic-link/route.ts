@@ -2,7 +2,24 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { signToken, isAdminEmail } from "@/lib/auth";
 
+const rateLimit = new Map<string, number>();
+const RATE_WINDOW = 60_000; // 1 min
+const RATE_MAX = 3;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const last = rateLimit.get(ip);
+  if (last && now - last < RATE_WINDOW) return true;
+  rateLimit.set(ip, now);
+  return false;
+}
+
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ ok: true });
+  }
+
   const { email } = await request.json();
 
   if (!email || typeof email !== "string" || !isAdminEmail(email)) {
