@@ -36,6 +36,14 @@ export function SiteFooter() {
         </div>
 
         <div className="flex gap-4">
+          <a
+            href="https://games.cajuos.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover-link"
+          >
+            Jogos
+          </a>
           <a href="/changelog" className="hover-link">
             Changelog
           </a>

@@ -10,6 +10,7 @@ const nav = [
   { href: "/blog", label: "Blog" },
   { href: "/changelog", label: "Changelog" },
   { href: "/about", label: "About" },
+  { href: "https://games.cajuos.dev", label: "Jogos" },
 ];
 
 export function SiteHeader() {
@@ -25,15 +26,19 @@ export function SiteHeader() {
           <span className="hidden sm:inline text-accent">.dev</span>
         </Link>
         <nav className="flex items-center gap-5 text-sm text-muted">
-          {nav.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className="hover-link"
-            >
-              {n.label}
-            </Link>
-          ))}
+          {nav.map((n) => {
+            const ext = n.href.startsWith("http");
+            return (
+              <Link
+                key={n.href}
+                href={n.href}
+                className="hover-link"
+                {...(ext ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              >
+                {n.label}
+              </Link>
+            );
+          })}
           <ThemeToggle />
         </nav>
       </div>
