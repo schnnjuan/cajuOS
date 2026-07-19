@@ -23,3 +23,14 @@ A primeira tool do CajuOS chegou. O objetivo é simples: você digita um título
 - Upload de imagem de fundo com escurecimento ajustável (Nenhum/Leve/Médio/Forte)
 - Upload de logo (PNG/JPEG/SVG) — título reposiciona automaticamente
 - Copiar PNG pra área de transferência — cola direto em redes sociais
+
+### v1.2
+
+- Ícone decorativo — 10 SVG icons inline (flame, target, star, bulb, rocket, pin, palette, sparkle, diamond, bolt). Renderizado no canvas via Image bitmap.
+- Fundo procedural — gera composição única com gradiente, círculos e retângulos aleatórios. Seed randômico a cada clique.
+- QR params — `?title=...&subtitle=...&palette=...&size=...&layout=...&icon=...` para compartilhar presets por URL
+- Formatos de exportação — PNG / JPEG / WebP com qualidade 92%
+- Social presets — botões rápidos pra Twitter, LinkedIn e Blog (configura paleta, layout e ícone)
+- Warning de emoji — aviso se título/subtítulo contém emoji (não renderiza no canvas)
+- Aviso de limite de caracteres — contador `N/65` e `N/95` nos inputs
+- Atalhos de teclado — Enter dispara download, Ctrl+C copia imagem

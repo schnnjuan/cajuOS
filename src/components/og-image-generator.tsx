@@ -18,8 +18,69 @@ const SIZE_PRESETS = [
 ] as const;
 
 type LayoutMode = "center" | "left";
+type Format = "png" | "jpeg" | "webp";
+
+// ── SVG decor icons (inline) ───────────────────────────
+interface DecorIconDef {
+  id: string;
+  svg: string;
+}
+
+const DECOR_ICONS: DecorIconDef[] = [
+  { id: "flame",  svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>` },
+  { id: "target", svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>` },
+  { id: "star",   svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
+  { id: "bulb",   svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>` },
+  { id: "rocket", svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>` },
+  { id: "pin",    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>` },
+  { id: "palette",svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.42-4.5-8-10-8Z"/></svg>` },
+  { id: "sparkle",svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.132 2.102.786 4.04 1.873 5.652C14.96 10.264 16.4 11.4 18 12c-1.6.6-3.04 1.736-4.127 3.348C12.786 16.96 12.132 18.898 12 21c-.132-2.102-.786-4.04-1.873-5.652C9.04 13.736 7.6 12.6 6 12c1.6-.6 3.04-1.736 4.127-3.348C11.214 7.04 11.868 5.102 12 3Z"/></svg>` },
+  { id: "diamond",svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41L13.7 2.71a2.41 2.41 0 0 0-3.41 0Z"/></svg>` },
+  { id: "bolt",   svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>` },
+];
+
+const DECOR_ICON_MAP = new Map(DECOR_ICONS.map((d) => [d.id, d]));
+
+// Social presets use icon ids instead of emoji
+const SOCIAL_PRESETS: Record<string, { size: number; layout: "center" | "left"; palette: string; icon: string; label: string }> = {
+  twitter:  { size: 0, layout: "center", palette: "classic", icon: "flame",  label: "Twitter" },
+  linkedin: { size: 0, layout: "left",   palette: "slate",   icon: "pin",    label: "LinkedIn" },
+  blog:     { size: 0, layout: "center", palette: "warm",    icon: "sparkle",label: "Blog" },
+};
+
+// ── SVG → Image cache ─────────────────────────────────
+function svgToDataUri(svg: string): string {
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+function loadSvgImage(svg: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = svgToDataUri(svg);
+  });
+}
+
+// Seeded PRNG (mulberry32)
+function mulberry32(a: number): () => number {
+  return function () {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    const t = Math.imul(a ^ (a >>> 15), 1 | a);
+    const t2 = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t2 ^ (t2 >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 // ── Helpers ────────────────────────────────────────────
+function emojiRegex(): RegExp {
+  return /[\u{1F000}-\u{1FFFF}]|\u{FE0F}|\u{200D}|[\u{2600}-\u{27BF}]|[\u{2B50}]|[\u{2702}-\u{27B0}]|[\u{00A9}|\u{00AE}]/u;
+}
+
+function hasEmoji(s: string): boolean {
+  return emojiRegex().test(s);
+}
+
 function truncate(text: string, maxChars: number): string {
   if (text.length <= maxChars) return text;
   return text.slice(0, maxChars - 1) + "\u2026";
@@ -76,10 +137,54 @@ function drawBgImage(ctx: CanvasRenderingContext2D, img: HTMLImageElement, W: nu
   }
 }
 
+// ── Procedural background ──────────────────────────────
+function drawProceduralBg(ctx: CanvasRenderingContext2D, W: number, H: number, seed: number) {
+  const rng = mulberry32(seed);
+  const s = W / 1200;
+
+  const angle = rng() * 360;
+  const gx = Math.cos((angle * Math.PI) / 180) * W;
+  const gy = Math.sin((angle * Math.PI) / 180) * H;
+  const grad = ctx.createLinearGradient(W / 2 - gx / 2, H / 2 - gy / 2, W / 2 + gx / 2, H / 2 + gy / 2);
+  const c1 = `hsl(${rng() * 360}, ${40 + rng() * 40}%, ${55 + rng() * 30}%)`;
+  const c2 = `hsl(${rng() * 360}, ${40 + rng() * 40}%, ${40 + rng() * 30}%)`;
+  const c3 = `hsl(${rng() * 360}, ${40 + rng() * 40}%, ${30 + rng() * 30}%)`;
+  grad.addColorStop(0, c1);
+  grad.addColorStop(0.5, c2);
+  grad.addColorStop(1, c3);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  const circleCount = 6 + Math.round(rng() * 10);
+  for (let i = 0; i < circleCount; i++) {
+    const x = rng() * W;
+    const y = rng() * H;
+    const r = (30 + rng() * 160) * s;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${rng() * 360}, ${50 + rng() * 30}%, ${60 + rng() * 20}%, ${0.08 + rng() * 0.15})`;
+    ctx.fill();
+  }
+
+  const rectCount = 2 + Math.round(rng() * 5);
+  for (let i = 0; i < rectCount; i++) {
+    const x = rng() * W;
+    const y = rng() * H;
+    const w = (60 + rng() * 180) * s;
+    const h = (60 + rng() * 180) * s;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rng() * Math.PI * 2);
+    ctx.fillStyle = `hsla(${rng() * 360}, ${40 + rng() * 30}%, ${50 + rng() * 20}%, ${0.05 + rng() * 0.1})`;
+    ctx.fillRect(-w / 2, -h / 2, w, h);
+    ctx.restore();
+  }
+}
+
+// ── Canvas drawing ─────────────────────────────────────
 function drawOgImage(
   ctx: CanvasRenderingContext2D,
-  W: number,
-  H: number,
+  W: number, H: number,
   title: string,
   subtitle: string,
   palette: (typeof PALETTES)[number],
@@ -88,31 +193,37 @@ function drawOgImage(
   bgImg: HTMLImageElement | null,
   layout: LayoutMode,
   overlay: number,
+  decorIconImg: HTMLImageElement | null,
+  proceduralSeed: number | null,
 ) {
   const { bg, text, accent, watermark } = palette;
-  const s = W / 1200; // scale factor
+  const s = W / 1200;
+  const pad = Math.round(32 * s);
+  const isSquare = W > H * 1.1;
 
   // Background
-  if (bgImg) {
+  if (proceduralSeed !== null) {
+    drawProceduralBg(ctx, W, H, proceduralSeed);
+  } else if (bgImg) {
     drawBgImage(ctx, bgImg, W, H, overlay);
   } else {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
   }
 
-  // Accent bar
-  const barH = Math.max(4, Math.round(6 * s));
-  const grad = ctx.createLinearGradient(0, 0, W, 0);
-  grad.addColorStop(0, accent + "20");
-  grad.addColorStop(1, accent + "05");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, barH);
+  // Accent bar (only if not procedural)
+  if (proceduralSeed === null) {
+    const barH = Math.max(4, Math.round(6 * s));
+    const grad = ctx.createLinearGradient(0, 0, W, 0);
+    grad.addColorStop(0, accent + "20");
+    grad.addColorStop(1, accent + "05");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, barH);
+  }
 
   // ── Logo ──
   let logoRight = 0;
-  const pad = Math.round(32 * s);
   const logoMaxW = Math.round(80 * s);
-
   if (logoImg) {
     const scale = Math.min(1, logoMaxW / logoImg.width);
     const lw = logoImg.width * scale;
@@ -124,6 +235,22 @@ function drawOgImage(
   const forceLeft = layout === "left" || logoRight > 0;
   const titleX = forceLeft && logoRight > 0 ? logoRight : forceLeft ? pad : W / 2;
   const textAlign: CanvasTextAlign = forceLeft ? "left" : "center";
+
+  // ── Decor icon (SVG rendered as Image) ──
+  if (decorIconImg) {
+    const iconSize = Math.round(56 * s * Math.min(1, H / 630));
+    const decorY = isSquare ? Math.round(H * 0.22) : Math.round(H * 0.14);
+    // Recolor SVG to match text color — apply via canvas global tint
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.drawImage(decorIconImg, W / 2 - iconSize / 2, decorY - iconSize, iconSize, iconSize);
+    // Overlay with palette text color for tint
+    ctx.globalCompositeOperation = "source-atop";
+    ctx.fillStyle = text;
+    ctx.fillRect(W / 2 - iconSize / 2, decorY - iconSize, iconSize, iconSize);
+    ctx.restore();
+  }
 
   // ── Title ──
   const maxTitleChars = Math.round(62 * Math.min(1, s));
@@ -166,9 +293,8 @@ function drawOgImage(
 
   ctx.font = `700 ${fontSize}px ${fontFamily}`;
 
-  const isSquare = W > H * 1.1;
   const titleY = isSquare
-    ? Math.round(H * 0.38)
+    ? Math.round(H * 0.42)
     : titleLines.length > 1
       ? Math.round(H * 0.28)
       : Math.round(H * 0.35);
@@ -210,6 +336,8 @@ export default function OgImageGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
+  const iconCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const pendingIconRef = useRef<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -223,13 +351,43 @@ export default function OgImageGenerator() {
   const [logoImg, setLogoImg] = useState<HTMLImageElement | null>(null);
   const [bgImg, setBgImg] = useState<HTMLImageElement | null>(null);
   const [overlay, setOverlay] = useState(0.35);
+  const [decorIcon, setDecorIcon] = useState("");
+  const [decorIconImg, setDecorIconImg] = useState<HTMLImageElement | null>(null);
+  const [format, setFormat] = useState<Format>("png");
+  const [proceduralSeed, setProceduralSeed] = useState<number | null>(null);
 
   const sizePreset = SIZE_PRESETS[sizeIdx];
   const W = sizePreset.w;
   const H = sizePreset.h;
   const palette = PALETTES.find((p) => p.id === paletteId) ?? PALETTES[0];
+  const showEmojiWarning = hasEmoji(title) || hasEmoji(subtitle);
 
-  // Resolve font-family do CSS variable --font-geist-sans
+  // ── Load decor icon SVG into Image ──
+  useEffect(() => {
+    if (!decorIcon) {
+      setDecorIconImg(null);
+      return;
+    }
+    const cached = iconCacheRef.current.get(decorIcon);
+    if (cached) {
+      setDecorIconImg(cached);
+      return;
+    }
+    const def = DECOR_ICON_MAP.get(decorIcon);
+    if (!def) {
+      setDecorIconImg(null);
+      return;
+    }
+    pendingIconRef.current = decorIcon;
+    loadSvgImage(def.svg).then((img) => {
+      iconCacheRef.current.set(decorIcon, img);
+      if (pendingIconRef.current === decorIcon) {
+        setDecorIconImg(img);
+      }
+    });
+  }, [decorIcon]);
+
+  // Resolve font-family
   useEffect(() => {
     const cssFont = getComputedStyle(document.documentElement)
       .getPropertyValue("--font-geist-sans")
@@ -239,13 +397,46 @@ export default function OgImageGenerator() {
     }
   }, []);
 
+  // ── URL params ──
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get("title");
+    const st = params.get("subtitle");
+    const p = params.get("palette");
+    const sz = params.get("size");
+    const l = params.get("layout");
+    const ic = params.get("icon");
+    if (t) setTitle(t);
+    if (st) setSubtitle(st);
+    if (p && PALETTES.some((pal) => pal.id === p)) setPaletteId(p);
+    if (sz === "square") setSizeIdx(1);
+    else if (sz === "instagram") setSizeIdx(2);
+    else if (sz === "og") setSizeIdx(0);
+    if (l === "left" || l === "center") setLayout(l);
+    if (ic) setDecorIcon(ic);
+  }, []);
+
+  // ── Keyboard shortcuts ──
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+        (document.querySelector<HTMLButtonElement>('[data-action="download"]'))?.click();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "c" && !e.target || e.target instanceof HTMLInputElement) {
+        (document.querySelector<HTMLButtonElement>('[data-action="copy"]'))?.click();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   const render = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay);
-  }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay]);
+    drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIconImg, proceduralSeed);
+  }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIconImg, proceduralSeed]);
 
   useEffect(() => {
     render();
@@ -255,23 +446,25 @@ export default function OgImageGenerator() {
   const handleDownload = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const mime = format === "jpeg" ? "image/jpeg" : format === "webp" ? "image/webp" : "image/png";
+    const ext = format === "jpeg" ? "jpg" : format;
     canvas.toBlob((blob) => {
       if (!blob) return;
       setDownloading(true);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${slugify(title)}-og-image.png`;
+      a.download = `${slugify(title)}-og-image.${ext}`;
       a.style.display = "none";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       setTimeout(() => setDownloading(false), 1500);
-    }, "image/png");
+    }, mime, 0.92);
   };
 
-  // ── Copy to clipboard ──
+  // ── Copy ──
   const handleCopy = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -316,12 +509,27 @@ export default function OgImageGenerator() {
     if (!file) return;
     readImage(file, (img) => {
       setBgImg(img);
+      setProceduralSeed(null);
       if (bgInputRef.current) bgInputRef.current.value = "";
     });
   };
 
   const removeLogo = () => setLogoImg(null);
-  const removeBg = () => setBgImg(null);
+  const removeBg = () => { setBgImg(null); setProceduralSeed(null); };
+
+  const applySocialPreset = (key: string) => {
+    const p = SOCIAL_PRESETS[key];
+    if (!p) return;
+    setSizeIdx(p.size);
+    setLayout(p.layout);
+    setPaletteId(p.palette);
+    setDecorIcon(p.icon);
+  };
+
+  const generateProcedural = () => {
+    setBgImg(null);
+    setProceduralSeed(Math.floor(Math.random() * 2147483647));
+  };
 
   return (
     <div className="space-y-6">
@@ -329,26 +537,41 @@ export default function OgImageGenerator() {
         Preencha os campos abaixo para gerar sua imagem Open Graph.
       </p>
 
+      {/* Social presets */}
+      <div>
+        <label className="text-sm font-medium">Preset rápido</label>
+        <div className="mt-1 flex gap-2">
+          {Object.entries(SOCIAL_PRESETS).map(([key, val]) => (
+            <button key={key} onClick={() => applySocialPreset(key)}
+              className="pressable rounded-md border border-border bg-card px-3 py-1.5 text-sm hover:border-foreground"
+            >
+              {val.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Inputs */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="og-title" className="text-sm font-medium">Título</label>
-          <input
-            id="og-title" type="text" value={title}
+          <input id="og-title" type="text" value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ex: Como gerar sua imagem OG"
-            maxLength={65}
+            placeholder="Ex: Como gerar sua imagem OG" maxLength={65}
             className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-foreground"
           />
-          <p className="mt-1 text-xs text-muted">{title.length}/65</p>
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-xs text-muted">{title.length}/65</span>
+            {showEmojiWarning && (
+              <span className="text-xs text-amber-600 dark:text-amber-400">Emoji pode não renderizar no canvas</span>
+            )}
+          </div>
         </div>
         <div>
           <label htmlFor="og-subtitle" className="text-sm font-medium">Subtítulo</label>
-          <input
-            id="og-subtitle" type="text" value={subtitle}
+          <input id="og-subtitle" type="text" value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-            placeholder="Ex: Uma tool por semana"
-            maxLength={95}
+            placeholder="Ex: Uma tool por semana" maxLength={95}
             className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-foreground"
           />
           <p className="mt-1 text-xs text-muted">{subtitle.length}/95</p>
@@ -412,6 +635,30 @@ export default function OgImageGenerator() {
         </div>
       </div>
 
+      {/* Decor icon (SVG) */}
+      <div>
+        <label className="text-sm font-medium">Ícone decorativo</label>
+        <div className="mt-1 flex flex-wrap gap-2">
+          <button onClick={() => setDecorIcon("")}
+            className={`pressable rounded-md border px-3 py-1.5 text-sm ${
+              !decorIcon ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground"
+            }`}
+          >Sem ícone</button>
+          {DECOR_ICONS.map((d) => (
+            <button key={d.id} onClick={() => setDecorIcon(d.id)}
+              className={`pressable flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm ${
+                decorIcon === d.id ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground"
+              }`}
+            >
+              <span className="inline-block h-4 w-4"
+                dangerouslySetInnerHTML={{ __html: d.svg.replace('<svg', `<svg fill="${decorIcon === d.id ? 'currentColor' : 'none'}" stroke="${decorIcon === d.id ? 'currentColor' : 'currentColor'}"`) }}
+              />
+              {d.id.charAt(0).toUpperCase() + d.id.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Logo + Background */}
       <div className="flex flex-wrap gap-4">
         <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp"
@@ -420,13 +667,11 @@ export default function OgImageGenerator() {
           <label className="text-sm font-medium">Logo</label>
           <div className="mt-1">
             {logoImg ? (
-              <button onClick={removeLogo}
-                className="pressable rounded-md border border-border px-3 py-1.5 text-sm hover:border-foreground">
+              <button onClick={removeLogo} className="pressable rounded-md border border-border px-3 py-1.5 text-sm hover:border-foreground">
                 Remover logo
               </button>
             ) : (
-              <button onClick={() => logoInputRef.current?.click()}
-                className="pressable rounded-md border border-border px-3 py-1.5 text-sm hover:border-foreground">
+              <button onClick={() => logoInputRef.current?.click()} className="pressable rounded-md border border-border px-3 py-1.5 text-sm hover:border-foreground">
                 + Logo
               </button>
             )}
@@ -436,23 +681,30 @@ export default function OgImageGenerator() {
           onChange={handleBgChange} className="hidden" />
         <div>
           <label className="text-sm font-medium">Fundo</label>
-          <div className="mt-1">
+          <div className="mt-1 flex gap-2">
             {bgImg ? (
-              <button onClick={removeBg}
-                className="pressable rounded-md border border-border px-3 py-1.5 text-sm hover:border-foreground">
+              <button onClick={removeBg} className="pressable rounded-md border border-border px-3 py-1.5 text-sm hover:border-foreground">
                 Remover fundo
               </button>
             ) : (
-              <button onClick={() => bgInputRef.current?.click()}
-                className="pressable rounded-md border border-border px-3 py-1.5 text-sm hover:border-foreground">
-                + Fundo
+              <button onClick={() => bgInputRef.current?.click()} className="pressable rounded-md border border-border px-3 py-1.5 text-sm hover:border-foreground">
+                + Imagem
               </button>
             )}
+            <button onClick={generateProcedural}
+              className={`pressable rounded-md border px-3 py-1.5 text-sm ${
+                proceduralSeed !== null
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-card hover:border-foreground"
+              }`}
+            >
+              ✦ Gerar procedural
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Overlay (só relevante com fundo) */}
+      {/* Overlay */}
       {bgImg && (
         <div>
           <label className="text-sm font-medium">Escurecimento do fundo</label>
@@ -469,36 +721,48 @@ export default function OgImageGenerator() {
                     ? "border-foreground bg-foreground text-background"
                     : "border-border bg-card hover:border-foreground"
                 }`}
-              >
-                {o.label}
-              </button>
+              >{o.label}</button>
             ))}
           </div>
         </div>
       )}
 
+      {/* Format */}
+      <div>
+        <label className="text-sm font-medium">Formato</label>
+        <div className="mt-1 flex gap-2">
+          {(["png", "jpeg", "webp"] as const).map((f) => (
+            <button key={f} onClick={() => setFormat(f)}
+              className={`pressable rounded-md border px-3 py-1.5 text-sm ${
+                format === f
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-card hover:border-foreground"
+              }`}
+            >{f.toUpperCase()}</button>
+          ))}
+        </div>
+      </div>
+
       {/* Preview + Actions */}
       <div className="space-y-4">
         <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <canvas
-            ref={canvasRef}
-            width={W} height={H}
+          <canvas ref={canvasRef} width={W} height={H}
             className="w-full"
             style={{ aspectRatio: `${W}/${H}`, display: "block", maxWidth: `${W}px` }}
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button onClick={handleDownload} disabled={downloading}
+          <button data-action="download" onClick={handleDownload} disabled={downloading}
             className={`pressable rounded-md px-4 py-2 text-sm font-medium transition-[color,transform] duration-150 ease-out ${
               downloading ? "bg-muted text-background" : "bg-foreground text-background"
             }`}
           >
-            {downloading ? "Baixando\u2026" : "Download PNG"}
+            {downloading ? "Baixando\u2026" : `Download ${format.toUpperCase()}`}
           </button>
           {downloading && <span className="text-sm text-muted animate-in">Pronto!</span>}
 
-          <button onClick={handleCopy} disabled={copying}
+          <button data-action="copy" onClick={handleCopy} disabled={copying}
             className={`pressable rounded-md border px-4 py-2 text-sm font-medium transition-[color,transform] duration-150 ease-out ${
               copyError ? "border-red-500 text-red-500"
                 : copying ? "border-muted text-muted"
