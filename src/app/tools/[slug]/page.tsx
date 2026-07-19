@@ -5,6 +5,7 @@ import { tools, toolBySlug, toolIndex } from "@/lib/tools";
 import { getToolComponent } from "@/components/tool-components";
 import { readMdx, readMdxMeta, contentByTool } from "@/lib/content";
 import { ToolIcon } from "@/components/tool-icons";
+import { softwareAppSchema, jsonLd, breadcrumbSchema } from "@/lib/schema";
 
 export function generateStaticParams() {
   return tools.map((t) => ({ slug: t.slug }));
@@ -20,7 +21,32 @@ export async function generateMetadata({
   const { slug } = await params;
   const tool = toolBySlug(slug);
   if (!tool) return {};
-  return { title: tool.name, description: tool.tagline };
+  return {
+    title: tool.name,
+    description: tool.tagline,
+    openGraph: {
+      title: tool.name,
+      description: tool.tagline,
+      url: `https://cajuos.dev/tools/${slug}`,
+      images: [
+        {
+          url: `/api/og?title=${encodeURIComponent(tool.name)}&subtitle=${encodeURIComponent(tool.tagline)}`,
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      title: tool.name,
+      description: tool.tagline,
+      images: [
+        `/api/og?title=${encodeURIComponent(tool.name)}&subtitle=${encodeURIComponent(tool.tagline)}`,
+      ],
+    },
+    alternates: {
+      canonical: `https://cajuos.dev/tools/${slug}`,
+    },
+  };
 }
 
 export default async function ToolPage({
@@ -163,6 +189,12 @@ export default async function ToolPage({
           <p className="mt-3 text-sm text-muted">Nada ainda.</p>
         </section>
       )}
+
+      {jsonLd(softwareAppSchema({ name: tool.name, description: tool.tagline, slug }))}
+      {jsonLd(breadcrumbSchema([
+        { name: "Tools", href: "/tools" },
+        { name: tool.name, href: `/tools/${slug}` },
+      ]))}
 
       <div className="mt-8 flex flex-wrap gap-4 text-sm">
         <Link

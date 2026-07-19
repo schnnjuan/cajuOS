@@ -7,6 +7,18 @@ import { mdxComponents } from "@/components/mdx";
 export const metadata = {
   title: "Changelog",
   description: "Acompanhe toda evolução das tools CajuOS.",
+  openGraph: {
+    title: "Changelog",
+    description: "Acompanhe toda evolução das tools CajuOS.",
+    url: "https://cajuos.dev/changelog",
+  },
+  twitter: {
+    title: "Changelog",
+    description: "Acompanhe toda evolução das tools CajuOS.",
+  },
+  alternates: {
+    canonical: "https://cajuos.dev/changelog",
+  },
 };
 
 export default async function ChangelogPage({

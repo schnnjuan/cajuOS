@@ -1,6 +1,24 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { tools, toolProgressLabel } from "@/lib/tools";
 import { ToolCard } from "@/components/tool-card";
+
+export const metadata: Metadata = {
+  openGraph: {
+    title: "CajuOS",
+    description:
+      "Uma tool por semana. Pequenas ferramentas úteis, open source, feitas para durar.",
+    url: "https://cajuos.dev",
+  },
+  twitter: {
+    title: "CajuOS",
+    description:
+      "Uma tool por semana. Pequenas ferramentas úteis, open source, feitas para durar.",
+  },
+  alternates: {
+    canonical: "https://cajuos.dev",
+  },
+};
 
 export default function Home() {
   return (

@@ -5,6 +5,7 @@ import { compileMDX } from "next-mdx-remote/rsc";
 import { listContent, contentSlugs, readMdx, stripFrontmatter } from "@/lib/content";
 import { toolBySlug } from "@/lib/tools";
 import { mdxComponents } from "@/components/mdx";
+import { articleSchema, breadcrumbSchema, jsonLd } from "@/lib/schema";
 
 export function generateStaticParams() {
   return contentSlugs("blog").map((slug) => ({ slug }));
@@ -20,7 +21,34 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = listContent("blog").find((p) => p.slug === slug);
   if (!post) return {};
-  return { title: post.title, description: post.description };
+  return {
+    title: post.title,
+    description: post.description,
+    openGraph: {
+      title: post.title,
+      description: post.description,
+      type: "article",
+      publishedTime: post.date,
+      url: `https://cajuos.dev/blog/${slug}`,
+      images: [
+        {
+          url: `/api/og?title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(post.description || "")}`,
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      title: post.title,
+      description: post.description,
+      images: [
+        `/api/og?title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(post.description || "")}`,
+      ],
+    },
+    alternates: {
+      canonical: `https://cajuos.dev/blog/${slug}`,
+    },
+  };
 }
 
 export default async function BlogPost({
@@ -71,6 +99,16 @@ export default async function BlogPost({
       <div className="prose prose-zinc mt-10 max-w-none dark:prose-invert">
         {content}
       </div>
+
+      {jsonLd(articleSchema({
+        headline: post.title,
+        description: post.description || "",
+        datePublished: post.date,
+      }))}
+      {jsonLd(breadcrumbSchema([
+        { name: "Blog", href: "/blog" },
+        { name: post.title, href: `/blog/${slug}` },
+      ]))}
     </article>
   );
 }

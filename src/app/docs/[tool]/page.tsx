@@ -22,6 +22,28 @@ export async function generateMetadata({
   return {
     title: `Docs · ${t.name}`,
     description: `Documentação da API ${t.name}.`,
+    openGraph: {
+      title: `Docs · ${t.name}`,
+      description: `Documentação da API ${t.name}.`,
+      url: `https://cajuos.dev/docs/${tool}`,
+      images: [
+        {
+          url: `/api/og?title=${encodeURIComponent(t.name)}&subtitle=${encodeURIComponent("Documentação — " + t.tagline)}`,
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      title: `Docs · ${t.name}`,
+      description: `Documentação da API ${t.name}.`,
+      images: [
+        `/api/og?title=${encodeURIComponent(t.name)}&subtitle=${encodeURIComponent("Documentação — " + t.tagline)}`,
+      ],
+    },
+    alternates: {
+      canonical: `https://cajuos.dev/docs/${tool}`,
+    },
   };
 }
 

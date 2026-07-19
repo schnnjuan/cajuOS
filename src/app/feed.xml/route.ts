@@ -18,12 +18,24 @@ export function GET() {
     )
     .join("");
 
+  const lastPubDate = posts.length > 0 && posts[0].date
+    ? new Date(posts[0].date).toUTCString()
+    : new Date().toUTCString();
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>CajuOS</title>
     <link>${base}</link>
     <description>Uma tool por semana.</description>
+    <language>pt-BR</language>
+    <lastBuildDate>${lastPubDate}</lastBuildDate>
+    <atom:link href="${base}/feed.xml" rel="self" type="application/rss+xml"/>
+    <image>
+      <url>${base}/favicon.png</url>
+      <title>CajuOS</title>
+      <link>${base}</link>
+    </image>
     ${items}
   </channel>
 </rss>`;

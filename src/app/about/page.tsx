@@ -3,6 +3,18 @@ import { tools, TOTAL_PLANNED } from "@/lib/tools";
 export const metadata = {
   title: "About",
   description: "Um experimento público de lançar uma ferramenta útil por semana.",
+  openGraph: {
+    title: "About",
+    description: "Um experimento público de lançar uma ferramenta útil por semana.",
+    url: "https://cajuos.dev/about",
+  },
+  twitter: {
+    title: "About",
+    description: "Um experimento público de lançar uma ferramenta útil por semana.",
+  },
+  alternates: {
+    canonical: "https://cajuos.dev/about",
+  },
 };
 
 export default function AboutPage() {

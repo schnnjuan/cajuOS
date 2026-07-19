@@ -5,6 +5,18 @@ import { toolBySlug } from "@/lib/tools";
 export const metadata = {
   title: "Documentação",
   description: "Documentação de todas as tools CajuOS.",
+  openGraph: {
+    title: "Documentação",
+    description: "Documentação de todas as tools CajuOS.",
+    url: "https://cajuos.dev/docs",
+  },
+  twitter: {
+    title: "Documentação",
+    description: "Documentação de todas as tools CajuOS.",
+  },
+  alternates: {
+    canonical: "https://cajuos.dev/docs",
+  },
 };
 
 export default function DocsIndex() {

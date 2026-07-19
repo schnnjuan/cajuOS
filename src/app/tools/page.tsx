@@ -4,6 +4,18 @@ import { ToolCard } from "@/components/tool-card";
 export const metadata = {
   title: "Tools",
   description: "Todas as ferramentas CajuOS.",
+  openGraph: {
+    title: "Tools",
+    description: "Todas as ferramentas CajuOS.",
+    url: "https://cajuos.dev/tools",
+  },
+  twitter: {
+    title: "Tools",
+    description: "Todas as ferramentas CajuOS.",
+  },
+  alternates: {
+    canonical: "https://cajuos.dev/tools",
+  },
 };
 
 export default function ToolsPage() {
