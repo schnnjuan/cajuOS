@@ -30,20 +30,10 @@ export async function generateMetadata({
       type: "article",
       publishedTime: post.date,
       url: `https://cajuos.dev/blog/${slug}`,
-      images: [
-        {
-          url: `/api/og?title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(post.description || "")}`,
-          width: 1200,
-          height: 630,
-        },
-      ],
     },
     twitter: {
       title: post.title,
       description: post.description,
-      images: [
-        `/api/og?title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(post.description || "")}`,
-      ],
     },
     alternates: {
       canonical: `https://cajuos.dev/blog/${slug}`,

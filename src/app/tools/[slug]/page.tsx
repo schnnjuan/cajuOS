@@ -28,20 +28,10 @@ export async function generateMetadata({
       title: tool.name,
       description: tool.tagline,
       url: `https://cajuos.dev/tools/${slug}`,
-      images: [
-        {
-          url: `/api/og?title=${encodeURIComponent(tool.name)}&subtitle=${encodeURIComponent(tool.tagline)}`,
-          width: 1200,
-          height: 630,
-        },
-      ],
     },
     twitter: {
       title: tool.name,
       description: tool.tagline,
-      images: [
-        `/api/og?title=${encodeURIComponent(tool.name)}&subtitle=${encodeURIComponent(tool.tagline)}`,
-      ],
     },
     alternates: {
       canonical: `https://cajuos.dev/tools/${slug}`,

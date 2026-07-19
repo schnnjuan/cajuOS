@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "generate:og-bg": "node scripts/generate-og-bg.cjs",
+    "build": "npm run generate:og-bg && next build",
     "start": "next start",
     "lint": "eslint"
   },
