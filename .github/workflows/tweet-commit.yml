@@ -16,11 +16,22 @@ jobs:
           COMMIT_MSG=$(jq -r '.head_commit.message // empty' "$GITHUB_EVENT_PATH")
           [ -z "$COMMIT_MSG" ] && exit 0
 
-          TWEET=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}" \
-            -H "Content-Type: application/json" \
-            -d "$(jq -n --arg msg "$COMMIT_MSG" '{contents:[{parts:[{text: ("Rewrite this git commit as 1 tweet in Brazilian Portuguese PT-BR, max 200 chars, natural dev sharing progress, no hashtags: " + $msg)}]}]}')" \
-            | jq -r '.candidates[0].content.parts[0].text // empty')
-          [ -z "$TWEET" ] && exit 0
+          # Try Gemini AI with retry, fallback to formatted commit
+          TWEET=""
+          for i in 1 2 3; do
+            RESP=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "$(jq -n --arg msg "$COMMIT_MSG" '{contents:[{parts:[{text: ("Rewrite this git commit as 1 tweet in Brazilian Portuguese PT-BR, max 200 chars, natural dev sharing progress, no hashtags: " + $msg)}]}]}')")
+            TWEET=$(echo "$RESP" | jq -r '.candidates[0].content.parts[0].text // empty')
+            [ -n "$TWEET" ] && break
+            [ $i -lt 3 ] && sleep 15
+          done
+
+          if [ -z "$TWEET" ]; then
+            TWEET="🛠️ ${COMMIT_MSG}
+
+cajuos.dev"
+          fi
 
           SCHEDULE=$(date -u -d "+2 minutes" +"%Y-%m-%dT%H:%M:%SZ")
 
