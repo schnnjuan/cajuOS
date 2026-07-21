@@ -36,6 +36,9 @@ export function SiteFooter() {
         </div>
 
         <div className="flex gap-4">
+          <a href="/experiment" className="hover-link">
+            Experimento
+          </a>
           <a
             href="https://games.cajuos.dev"
             target="_blank"

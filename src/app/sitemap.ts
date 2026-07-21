@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/changelog`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.6 },
     { url: `${base}/docs`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
     { url: `${base}/about`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
+    { url: `${base}/experiment`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.8 },
   ];
 
   const toolPages = tools.map((t) => ({

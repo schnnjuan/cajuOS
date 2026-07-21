@@ -6,6 +6,7 @@ import { getToolComponent } from "@/components/tool-components";
 import { readMdx, readMdxMeta, contentByTool } from "@/lib/content";
 import { ToolIcon } from "@/components/tool-icons";
 import { softwareAppSchema, jsonLd, breadcrumbSchema } from "@/lib/schema";
+import { ToolUsageCounter } from "@/components/tool-usage-counter";
 
 export function generateStaticParams() {
   return tools.map((t) => ({ slug: t.slug }));
@@ -74,7 +75,10 @@ export default async function ToolPage({
       </Link>
       <div className="mt-6 flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-muted">Tool <span className="text-accent">#{index + 1}</span></p>
+          <div className="flex items-center gap-2 text-sm text-muted">
+            <span>Tool <span className="text-accent">#{index + 1}</span></span>
+            <ToolUsageCounter slug={tool.slug} />
+          </div>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">
             {tool.name}
           </h1>
