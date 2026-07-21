@@ -11,9 +11,11 @@ export const metadata: Metadata = {
     url: "https://cajuos.dev",
   },
   twitter: {
+    card: "summary_large_image",
     title: "CajuOS",
     description:
       "Uma tool por semana. Ferramentas úteis que rodam no navegador.",
+    images: ["/opengraph-image.png"],
   },
   alternates: {
     canonical: "https://cajuos.dev",

@@ -13,6 +13,8 @@ export const metadata: Metadata = {
     url: "https://cajuos.dev/experiment",
   },
   twitter: {
+    card: "summary_large_image",
+    images: ["/opengraph-image.png"],
     title: "Experimento · CajuOS",
     description:
       "Uma tool por semana por tempo indeterminado. O plano, as regras e o que já saiu.",

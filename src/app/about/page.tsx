@@ -9,6 +9,8 @@ export const metadata = {
     url: "https://cajuos.dev/about",
   },
   twitter: {
+    card: "summary_large_image",
+    images: ["/opengraph-image.png"],
     title: "About",
     description: "Um experimento público de lançar uma ferramenta útil por semana.",
   },

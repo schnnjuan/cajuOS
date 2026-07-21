@@ -10,6 +10,8 @@ export const metadata = {
     url: "https://cajuos.dev/tools",
   },
   twitter: {
+    card: "summary_large_image",
+    images: ["/opengraph-image.png"],
     title: "Tools",
     description: "Todas as ferramentas CajuOS.",
   },

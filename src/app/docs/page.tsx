@@ -11,6 +11,8 @@ export const metadata = {
     url: "https://cajuos.dev/docs",
   },
   twitter: {
+    card: "summary_large_image",
+    images: ["/opengraph-image.png"],
     title: "Documentação",
     description: "Documentação de todas as tools CajuOS.",
   },

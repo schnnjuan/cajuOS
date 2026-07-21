@@ -32,6 +32,8 @@ export async function generateMetadata({
       url: `https://cajuos.dev/blog/${slug}`,
     },
     twitter: {
+      card: "summary_large_image",
+      images: ["/opengraph-image.png"],
       title: post.title,
       description: post.description,
     },

@@ -28,6 +28,8 @@ export async function generateMetadata({
       url: `https://cajuos.dev/docs/${tool}`,
     },
     twitter: {
+      card: "summary_large_image",
+      images: ["/opengraph-image.png"],
       title: `Docs · ${t.name}`,
       description: `Documentação da API ${t.name}.`,
     },
