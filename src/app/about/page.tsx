@@ -33,9 +33,8 @@ export default function AboutPage() {
 
         <h2>A ideia</h2>
         <p className="text-pretty">
-          Ferramentas pequenas viciam pouco e ensinam muito. O formato de uma
-          por semana força foco: nada de projetos infinitos, nada de recursos
-         que ninguém pediu. É feature-creep zero.
+          Ferramentas pequenas são mais faceis de manter. O formato de uma por
+          semana força foco. Se não couber em sete dias, não é tool, é produto.
         </p>
 
         <h2>O que já tem</h2>

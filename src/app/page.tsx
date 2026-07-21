@@ -7,13 +7,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "CajuOS",
     description:
-      "Uma tool por semana. Pequenas ferramentas úteis, open source, feitas para durar.",
+      "Uma tool por semana. Ferramentas úteis que rodam no navegador.",
     url: "https://cajuos.dev",
   },
   twitter: {
     title: "CajuOS",
     description:
-      "Uma tool por semana. Pequenas ferramentas úteis, open source, feitas para durar.",
+      "Uma tool por semana. Ferramentas úteis que rodam no navegador.",
   },
   alternates: {
     canonical: "https://cajuos.dev",
@@ -31,8 +31,8 @@ export default function Home() {
           Uma por semana.
         </h1>
         <p className="max-w-xl text-lg text-muted">
-          CajuOS é uma coleção de tools open source. Cada uma resolve um
-          problema real, roda no browser e tem código aberto.
+          Tools que resolvem problemas de verdade. Tudo open source, tudo
+          roda no navegador.
         </p>
         <div>
           <Link

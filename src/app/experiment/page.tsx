@@ -36,9 +36,9 @@ export default function ExperimentPage() {
         Uma tool por semana
       </h1>
       <p className="mt-2 text-lg text-muted text-pretty">
-        Por que construir uma ferramenta nova toda semana durante{" "}
-        {TOTAL_PLANNED} semanas seguidas? A resposta curta: porque projetos
-        pequenos ensinam mais que projetos grandes.
+        No começo de 2026 eu tinha uma lista de ideias pequenas. Coisas que eu
+        mesmo queria usar. Ferramentas de imagem, conversores, geradores.
+        Nada que fosse mudar o mundo. Tudo que fosse útil no dia seguinte.
       </p>
 
       {/* Progress */}
@@ -69,21 +69,19 @@ export default function ExperimentPage() {
       <div className="prose prose-zinc mt-10 max-w-none dark:prose-invert">
         <h2>Como começou</h2>
         <p className="text-pretty">
-          No começo de 2026 eu estava com uma lista de ideias pequenas — coisas
-          que eu mesmo queria usar, mas que não existiam do jeito que eu
-          precisava. Ferramentas de imagem, conversores, geradores, coisinhas
-          de terminal. Nada que fosse mudar o mundo, tudo que fosse útil no dia
-          seguinte.
+          Eu tinha uma lista de ideias pequenas. Ferramentas de imagem,
+          conversores, geradores, coisinhas de terminal. Coisas que eu queria
+          usar mas não existiam do jeito que eu precisava.
         </p>
         <p className="text-pretty">
-          O problema é que projetos pequenos não acabam se você deixa eles
-          crescendo. Você começa com um conversor de CSV, uma semana depois
-          está desenhando sistema de login, duas semanas depois tem um banco de
-          dados e zero ferramentas funcionando.
+          Projetos pequenos não acabam se você deixa eles crescendo. Você
+          começa com um conversor de CSV. Uma semana depois está desenhando
+          sistema de login. Duas semanas depois tem banco de dados e zero
+          ferramentas funcionando.
         </p>
         <p className="text-pretty">
-          A saída foi um limite duro: uma semana. Sete dias. Se não ficar
-          pronto, corta. Se ficar, lança. A próxima é outro problema.
+          Eu coloquei um limite: uma semana. Sete dias. Se não ficar pronto,
+          corta. Se ficar, lança. A próxima tool é outro problema.
         </p>
 
         <h2>As regras</h2>
@@ -114,22 +112,21 @@ export default function ExperimentPage() {
 
         <h2>Por que tool e não app</h2>
         <p className="text-pretty">
-          Tool resolve um problema. App vira um ecossistema. O formato de tool
-          força você a responder uma pergunta: &quot;qual é o menor produto
-          viável que resolve isso?&quot;. Se a resposta for &quot;precisa de
+          O formato de tool força você a responder uma pergunta. Qual o menor
+          produto viável que resolve isso? Se a resposta for &quot;precisa de
           banco de dados, autenticação, fila, webhook e integração com
           Stripe&quot;, você escolheu o problema errado.
         </p>
         <p className="text-pretty">
-          Além disso, tool é mais fácil de compartilhar. Manda o link, a pessoa
-          usa, pronto. Não precisa criar conta, não precisa onboarding, não
-          precisa tutorial de cinco minutos.
+          Tool é mais fácil de compartilhar. Manda o link, a pessoa usa, pronto.
+          Não precisa criar conta. Não precisa onboarding. Não precisa tutorial
+          de cinco minutos.
         </p>
 
         <h2>O que já saiu</h2>
         <p className="text-pretty">
-          {tools.length} ferramentas lançadas até agora. Cada uma com sua
-          história, seu post-mortem e seu código aberto.
+          {tools.length} ferramentas lançadas até agora. Cada uma tem seu
+          post-mortem no blog e o código no GitHub.
         </p>
 
         {tools.length > 0 ? (
@@ -155,13 +152,12 @@ export default function ExperimentPage() {
 
         <h2>O que vem por aí</h2>
         <p className="text-pretty">
-          A lista de ideias é maior que o tempo disponível. Algumas coisas que
-          estão na fila: mais ferramentas de imagem, conversores de formato,
-          geradores de código, dashboards simples. E conforme o projeto cresce,
-          as sugestões que chegam pelas issues do GitHub.
+          A lista de ideias é maior que o tempo disponível. Mais ferramentas de
+          imagem, conversores de formato, geradores de código, dashboards
+          simples. E as sugestões que chegam pelas issues do GitHub.
         </p>
         <p className="text-pretty">
-          Se você tem uma ideia de tool que resolva um problema real, abre uma{" "}
+          Tem uma ideia? Abre uma{" "}
           <a
             href="https://github.com/schnnjuan/cajuOS/issues/new"
             target="_blank"
@@ -175,11 +171,10 @@ export default function ExperimentPage() {
         <h2>Uma nota sobre o formato</h2>
         <p className="text-pretty">
           Esse texto é a primeira coisa que escrevi sobre o experimento. Com o
-          tempo, cada tool ganha seu post-mortem — o que deu certo, o que deu
-          errado, quanto tempo levou, o que eu faria diferente. A ideia é que o
-          registro público vire tanto documentação quanto entretenimento. A
-          página de experimento também vai ser atualizada conforme o projeto
-          andar, com as lições aprendidas no caminho.
+          tempo cada tool ganha seu post-mortem. O que deu certo, o que deu
+          errado, quanto tempo levou. Coisas que só quem passou pela
+          implementação sabe. A página de experimento também vai ser atualizada
+          conforme o projeto andar.
         </p>
       </div>
 

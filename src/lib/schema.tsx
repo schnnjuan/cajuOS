@@ -10,7 +10,7 @@ export function websiteSchema() {
     name: "CajuOS",
     url: "https://cajuos.dev",
     description:
-      "Pequenas ferramentas úteis, open source, feitas para durar.",
+      "Ferramentas úteis que rodam no navegador.",
     inLanguage: "pt-BR",
   };
 }

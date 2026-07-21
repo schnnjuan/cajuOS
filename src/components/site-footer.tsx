@@ -19,7 +19,7 @@ export function SiteFooter() {
   return (
     <footer>
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 px-6 py-8 text-sm text-muted sm:flex-row sm:justify-between">
-        <span>cajuos<span className="text-accent">.dev</span> — uma tool por semana.</span>
+        <span>cajuos<span className="text-accent">.dev</span>, uma tool por semana.</span>
 
         <div className="flex flex-col items-center gap-1">
           <span>{toolProgressLabel()}</span>

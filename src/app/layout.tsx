@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: "%s · CajuOS",
   },
   description:
-    "Uma tool por semana. Pequenas ferramentas úteis, open source, feitas para durar.",
+    "Uma tool por semana. Ferramentas úteis que rodam no navegador.",
   metadataBase: new URL(siteUrl),
   icons: {
     icon: [
@@ -40,14 +40,14 @@ export const metadata: Metadata = {
     url: siteUrl,
     title: "CajuOS",
     description:
-      "Uma tool por semana. Pequenas ferramentas úteis, open source, feitas para durar.",
+      "Uma tool por semana. Ferramentas úteis que rodam no navegador.",
     images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "CajuOS",
     description:
-      "Uma tool por semana. Pequenas ferramentas úteis, open source, feitas para durar.",
+      "Uma tool por semana. Ferramentas úteis que rodam no navegador.",
     images: ["/opengraph-image.png"],
   },
   alternates: {

@@ -1,25 +1,25 @@
 ---
-title: OG Image Generator — o que aprendi construindo a Tool #1
+title: OG Image Generator - o que aprendi construindo a Tool #1
 date: 2026-07-26
-description: Sete dias de código, cinco paletas, três bugs sérios e uma marca d'água. O post-mortem honesto da primeira ferramenta do CajuOS.
+description: Sete dias de código, cinco paletas, três bugs sérios e uma marca d'agua. O post-mortem da primeira ferramenta do CajuOS.
 tool: og-image
 ---
 
 ## O começo
 
-A ideia parecia simples: uma página com um canvas, dois campos de texto e um botão de download. O usuário digita um título, escolhe uma cor, baixa um PNG 1200×630. Pronto.
+A ideia parecia simples. Uma página com um canvas, dois campos de texto e um botão de download. O usuário digita um título, escolhe uma cor, baixa um PNG 1200x630.
 
-No papel, cabia em três horas.
+No papel, cabia em tres horas.
 
-Na prática, levou uma semana inteira — entrega final no sábado à noite, 23h47, com um bug de renderização no Safari que só apareceu depois do deploy.
+Na pratica, levou uma semana inteira. Entrega final no sabado a noite, 23h47, com um bug de renderizacao no Safari que so apareceu depois do deploy.
 
-Esse texto é o que deu certo, o que deu errado e o que eu faria diferente na próxima.
+Esse texto e o que deu certo, o que deu errado e o que muda na proxima.
 
 ## O que deu certo
 
-### Canvas API é mais simples do que parece
+### Canvas API e mais simples do que parece
 
-Eu nunca tinha usado Canvas API a sério. Sempre achei que precisava de uma biblioteca — fabric.js, konva, pixi. A verdade é que pra desenhar texto, retângulos e linhas, a API nativa resolve.
+Eu nunca tinha usado Canvas API a serio. Sempre achei que precisava de uma biblioteca como fabric.js, konva ou pixi. Mas pra desenhar texto, retangulos e linhas, a API nativa resolve.
 
 ```js
 const canvas = document.createElement("canvas");
@@ -28,57 +28,57 @@ ctx.fillStyle = "#ffffff";
 ctx.fillRect(0, 0, 1200, 630);
 ctx.fillStyle = "#18181b";
 ctx.font = "bold 56px Geist, sans-serif";
-ctx.fillText("Meu título", 80, 200);
+ctx.fillText("Meu titulo", 80, 200);
 ```
 
-Não precisa de mais nada. O `toBlob()` gera o PNG na hora.
+Nao precisa de mais nada. O `toBlob()` gera o PNG na hora.
 
-### Path2D salvou os ícones
+### Path2D salvou os icones
 
-Na primeira versão dos ícones decorativos, eu tentei fazer compositing com `source-atop`. Funcionava no Chrome, quebrava no Firefox e no Safari. Troquei por `Path2D` direto com `ctx.stroke()` — zero dependência de imagem externa, funciona em todo browser.
+Na primeira versao dos icones decorativos, eu tentei fazer compositing com `source-atop`. Funcionava no Chrome, quebrava no Firefox e no Safari. Troquei por `Path2D` direto com `ctx.stroke()`. Zero dependencia de imagem externa, funciona em todo browser.
 
-### Paletas fixas foram a decisão certa
+### Paletas fixas foram a decisao certa
 
-Deixar o usuário escolher qualquer cor do espectro parecia o caminho "mais flexível". Na prática, 90% das pessoas não sabem que cor funciona em fundo branco. Oferecer 5 opções curadas eliminou decisão sem eliminar controle.
+Deixar o usuario escolher qualquer cor do espectro parecia o caminho mais flexivel. Na pratica, 90% das pessoas nao sabem que cor funciona em fundo branco. Oferecer 5 opcoes curadas eliminou decisao sem eliminar controle.
 
 ## O que deu errado
 
 ### Subestimei o Safari
 
-Três vezes. Primeiro com o `source-atop` dos ícones, depois com o `toBlob()` que no Safari não aceita o parâmetro `type` do mesmo jeito, e por último com o `word-wrap` manual no canvas — o Safari renderiza `measureText()` com kerning diferente do Chrome, então as quebras de linha ficavam em lugares diferentes.
+Tres vezes. Primeiro com o `source-atop` dos icones. Depois com o `toBlob()` que no Safari nao aceita o parametro `type` do mesmo jeito. E por ultimo com o `word-wrap` manual no canvas. O Safari renderiza `measureText()` com kerning diferente do Chrome, entao as quebras de linha ficavam em lugares diferentes.
 
-A lição: testar no Safari antes de lançar, não depois.
+A licao: testar no Safari antes de lancar, nao depois.
 
 ### O fundo procedural foi scope creep
 
-A v1.1 ganhou um gerador de fundo procedural: gradiente, blob radial, grid de dots, streaks, glow circles. São cinco camadas de canvas. Ficou bonito, mas consumiu dois dias que poderiam ter ido pra feature mais útil: suporte a upload de logo.
+A v1.1 ganhou um gerador de fundo procedural: gradiente, blob radial, grid de dots, streaks, glow circles. Sao cinco camadas de canvas. Ficou bonito, mas consumiu dois dias que poderiam ter ido pra feature mais util. Suporte a upload de logo, por exemplo.
 
-Lição aprendida: efeito visual bonito não é feature. A pergunta certa é "o usuário pediu isso?" — ninguém pediu fundo procedural.
+Licao aprendida: efeito visual bonito nao e feature. A pergunta certa e "o usuario pediu isso?". Ninguem pediu fundo procedural.
 
 ### O download falhou no iOS
 
-O `canvas.toBlob()` gera um blob, mas o iOS Safari não permite download direto de blob URLs criados por scripts. Precisei converter pra objeto URL e abrir em nova aba como fallback. Mais uma meia hora de debug em dispositivo que eu não tinha em mãos.
+O `canvas.toBlob()` gera um blob. Mas o iOS Safari nao permite download direto de blob URLs criados por scripts. Precisei converter pra objeto URL e abrir em nova aba como fallback. Mais uma meia hora de debug em dispositivo que eu nao tinha em maos.
 
-## Números
+## Numeros
 
-| Métrica | Valor |
+| Metrica | Valor |
 |---|---|
-| Tempo total (primeira versão) | ~30 horas |
-| Linhas de código (componente principal) | ~400 |
+| Tempo total (primeira versao) | ~30 horas |
+| Linhas de codigo (componente principal) | ~400 |
 | Paletas | 5 |
-| Versões até o lançamento | 3 |
-| Bugs pós-deploy | 2 (Safari + iOS) |
+| Versoes ate o lancamento | 3 |
+| Bugs pos-deploy | 2 (Safari + iOS) |
 | Dias do prazo original | 7 |
 | Hora do deploy | 23h47 |
 
 ## O que muda na Tool #2
 
-- **Testar em Safari e iOS primeiro.** Não no final.
-- **Menos efeito visual, mais utilidade.** A próxima tool não vai ter fundo procedural, vai ter o que as pessoas precisam.
-- **Prazo mais justo.** Três horas não é uma estimativa, é um palpite. Se a tool parecer simples demais, provavelmente tem detalhe escondido.
+- **Testar em Safari e iOS primeiro.** Nao no final.
+- **Menos efeito visual, mais utilidade.** A proxima tool nao vai ter fundo procedural.
+- **Prazo mais justo.** Tres horas nao e estimativa, e palpite. Se a tool parecer simples demais, provavelmente tem detalhe escondido.
 
 ## No fim
 
-A OG Image Generator está no ar, funciona, as pessoas usam. O post-mortem parece negativo porque destaca os erros, mas o saldo é positivo: uma ferramenta que resolve um problema real, com código aberto, rodando no navegador, sem custo de infra.
+A OG Image Generator esta no ar, funciona, as pessoas usam. O post-mortem parece negativo porque destaca os erros, mas o saldo e positivo.
 
-A Tool #2 vem na semana que vem. Se tiver sugestão, abre uma issue. Se quiser acompanhar o projeto inteiro, o código tá no [GitHub](https://github.com/schnnjuan/cajuOS).
+A Tool #2 vem na semana que vem. O codigo ta no [GitHub](https://github.com/schnnjuan/cajuOS).
