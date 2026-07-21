@@ -1,0 +1,32 @@
+name: Auto Tweet Commit
+on:
+  push:
+    branches: [main]
+
+jobs:
+  tweet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate and schedule tweet
+        env:
+          GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BUFFER_KEY: ${{ secrets.BUFFER_API_KEY }}
+          CHANNEL_ID: ${{ secrets.BUFFER_CHANNEL_ID }}
+        run: |
+          COMMIT_MSG=$(jq -r '.head_commit.message // empty' "$GITHUB_EVENT_PATH")
+          [ -z "$COMMIT_MSG" ] && exit 0
+
+          TWEET=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg msg "$COMMIT_MSG" '{contents:[{parts:[{text: ("Rewrite this git commit as 1 tweet in Brazilian Portuguese PT-BR, max 200 chars, natural dev sharing progress, no hashtags: " + $msg)}]}]}')" \
+            | jq -r '.candidates[0].content.parts[0].text // empty')
+          [ -z "$TWEET" ] && exit 0
+
+          SCHEDULE=$(date -u -d "+2 minutes" +"%Y-%m-%dT%H:%M:%SZ")
+
+          curl -s -X POST "https://api.buffer.com" \
+            -H "Authorization: Bearer ${BUFFER_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg text "$TWEET" --arg channel "$CHANNEL_ID" --arg time "$SCHEDULE" \
+              '{query: "mutation CreatePost($input: CreatePostInput!) { createPost(input: $input) { id status scheduledAt } }",
+                variables: {input: {text: $text, channelIds: [$channel], scheduledAt: $time, mode: "addToQueue"}}}')"
