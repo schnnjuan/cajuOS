@@ -18,45 +18,48 @@ export function SiteFooter() {
 
   return (
     <footer>
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 px-6 py-8 text-sm text-muted sm:flex-row sm:justify-between">
-        <span>cajuos<span className="text-accent">.dev</span>, uma tool por semana.</span>
-
-        <div className="flex flex-col items-center gap-1">
-          <span>{toolProgressLabel()}</span>
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 px-6 py-8 text-sm text-muted sm:flex-row sm:items-start sm:justify-between">
+        {/* Marca + progresso */}
+        <div className="flex flex-col items-center sm:items-start gap-1">
+          <span className="tabular-nums font-medium text-foreground">
+            cajuos<span className="text-accent">.dev</span>
+          </span>
+          <span className="tabular-nums">{toolProgressLabel()}</span>
           <a
             href="https://x.com/schnnjuan"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Perfil no X/Twitter"
-            className="hover-link flex items-center gap-1.5"
+            className="flex items-center gap-1.5 transition-colors hover:text-foreground"
           >
-            <span>by schnnjuan with ☕</span>
+            <span>by schnnjuan</span>
             <XLogo />
           </a>
         </div>
 
-        <div className="flex gap-4">
-          <a href="/experiment" className="hover-link">
+        {/* Links */}
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5">
+          <a href="/experiment" className="transition-colors hover:text-foreground">
             Experimento
+          </a>
+          <a href="/changelog" className="transition-colors hover:text-foreground">
+            Changelog
           </a>
           <a
             href="https://games.cajuos.dev"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover-link"
+            className="transition-colors hover:text-foreground"
           >
             Jogos
           </a>
-          <a href="/changelog" className="hover-link">
-            Changelog
-          </a>
           <a
             href="https://github.com/schnnjuan/cajuOS"
-            className="hover-link"
+            className="transition-colors hover:text-foreground"
           >
             GitHub
           </a>
-          <a href="/feed.xml" type="application/rss+xml" className="hover-link">
+          <a href="/feed.xml" type="application/rss+xml" className="transition-colors hover:text-foreground">
             RSS
           </a>
         </div>

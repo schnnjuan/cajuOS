@@ -146,6 +146,19 @@ body {
   }
 }
 
+/* ── Tabular numbers para contadores/uso ── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Spring-like touch feedback (CSS fallback) ── */
+@media (hover: hover) and (pointer: fine) {
+  .spring-touch:active {
+    transform: scale(0.96);
+    transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+
 /* ── Focus visible ── */
 *:focus-visible {
   outline: 2px solid var(--foreground);

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { tools, toolProgressLabel, TOTAL_PLANNED, toolIndex } from "@/lib/tools";
+import { tools, toolProgressLabel, TOTAL_PLANNED, toolIndex, currentWeek, streakPercent } from "@/lib/tools";
 
 export const metadata: Metadata = {
   title: "Experimento",
@@ -22,7 +22,79 @@ export const metadata: Metadata = {
   },
 };
 
+function ProgressBar({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex-1 h-2 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-accent transition-all duration-700 ease-out"
+          style={{ width: `${Math.min(100, value)}%` }}
+        />
+      </div>
+      <span className="tabular-nums shrink-0 text-sm text-muted">{label}</span>
+    </div>
+  );
+}
+
+function ToolTimelineEntry({
+  tool,
+  index,
+  isNext,
+}: {
+  tool?: (typeof tools)[number];
+  index: number;
+  isNext?: boolean;
+}) {
+  const dot = isNext ? (
+    <span className="relative flex h-3 w-3 shrink-0">
+      <span className="absolute inline-flex h-full w-full rounded-full bg-accent/30" />
+      <span className="relative inline-flex h-3 w-3 rounded-full bg-accent" />
+    </span>
+  ) : tool ? (
+    <span className="flex h-3 w-3 shrink-0 rounded-full bg-accent" />
+  ) : null;
+
+  return (
+    <div className="flex gap-4 group">
+      <div className="flex flex-col items-center">
+        {dot}
+        <div className="w-px flex-1 bg-border" />
+      </div>
+      <div className="pb-8 flex-1 min-w-0">
+        {tool ? (
+          <>
+            <div className="flex items-center gap-2">
+              <Link href={`/tools/${tool.slug}`} className="font-medium hover:underline underline-offset-4">
+                {tool.name}
+              </Link>
+              <span className="text-xs text-accent tabular-nums">#{index + 1}</span>
+            </div>
+            <p className="text-sm text-muted mt-0.5">{tool.tagline}</p>
+            <p className="text-xs text-muted mt-0.5 tabular-nums">
+              {new Date(tool.launchedAt).toLocaleDateString("pt-BR", {
+                day: "numeric",
+                month: "short",
+              })}
+            </p>
+          </>
+        ) : isNext ? (
+          <>
+            <span className="font-medium text-muted">Próxima tool</span>
+            <p className="text-sm text-muted mt-0.5">
+              Segunda-feira. O problema já está escolhido.
+            </p>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export default function ExperimentPage() {
+  const week = currentWeek();
+  const streak = streakPercent();
+  const nextToolIndex = tools.length; // 0-based index for next
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-20">
       <Link
@@ -41,49 +113,40 @@ export default function ExperimentPage() {
         Nada que fosse mudar o mundo. Tudo que fosse útil no dia seguinte.
       </p>
 
-      {/* Progress */}
-      <div className="mt-8 rounded-xl border border-border bg-card p-6">
-        <p className="text-sm text-muted">Progresso atual</p>
-        <p className="mt-1 text-2xl font-semibold tracking-tight">
-          {toolProgressLabel()}
-        </p>
-        {tools.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {tools.map((t) => {
-              const i = toolIndex(t.slug);
-              return (
-                <Link
-                  key={t.slug}
-                  href={`/tools/${t.slug}`}
-                  className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs transition-colors hover:border-foreground"
-                >
-                  <span className="text-accent">#{i + 1}</span>
-                  {t.name}
-                </Link>
-              );
-            })}
-          </div>
-        )}
+      {/* Stats row */}
+      <div className="mt-8 grid grid-cols-3 gap-4">
+        <div className="rounded-xl border border-border bg-card p-4 text-center">
+          <p className="text-2xl font-semibold tracking-tight tabular-nums">{toolProgressLabel()}</p>
+          <p className="text-xs text-muted mt-1">ferramentas</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4 text-center">
+          <p className="text-2xl font-semibold tracking-tight tabular-nums">Semana {week}</p>
+          <p className="text-xs text-muted mt-1">do experimento</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4 text-center">
+          <p className="text-2xl font-semibold tracking-tight tabular-nums">{streak}%</p>
+          <p className="text-xs text-muted mt-1">de consistência</p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="mt-4">
+        <ProgressBar value={streak} label={`${tools.length} de ${week} semanas`} />
+      </div>
+
+      {/* Timeline */}
+      <div className="mt-10">
+        <h2 className="text-sm font-medium uppercase tracking-wide text-muted mb-6">Linha do tempo</h2>
+        <div className="pl-1">
+          {tools.map((tool, i) => (
+            <ToolTimelineEntry key={tool.slug} tool={tool} index={i} />
+          ))}
+          {/* Placeholder da próxima tool */}
+          <ToolTimelineEntry index={nextToolIndex} isNext />
+        </div>
       </div>
 
       <div className="prose prose-zinc mt-10 max-w-none dark:prose-invert">
-        <h2>Como começou</h2>
-        <p className="text-pretty">
-          Eu tinha uma lista de ideias pequenas. Ferramentas de imagem,
-          conversores, geradores, coisinhas de terminal. Coisas que eu queria
-          usar mas não existiam do jeito que eu precisava.
-        </p>
-        <p className="text-pretty">
-          Projetos pequenos não acabam se você deixa eles crescendo. Você
-          começa com um conversor de CSV. Uma semana depois está desenhando
-          sistema de login. Duas semanas depois tem banco de dados e zero
-          ferramentas funcionando.
-        </p>
-        <p className="text-pretty">
-          Eu coloquei um limite: uma semana. Sete dias. Se não ficar pronto,
-          corta. Se ficar, lança. A próxima tool é outro problema.
-        </p>
-
         <h2>As regras</h2>
         <ul>
           <li>

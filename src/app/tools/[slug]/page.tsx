@@ -77,7 +77,13 @@ export default async function ToolPage({
         <div>
           <div className="flex items-center gap-2 text-sm text-muted">
             <span>Tool <span className="text-accent">#{index + 1}</span></span>
+            <span className="text-xs" aria-hidden="true">·</span>
             <ToolUsageCounter slug={tool.slug} />
+            {(Date.now() - new Date(tool.launchedAt).getTime()) < 14 * 24 * 60 * 60 * 1000 && (
+              <span className="inline-flex items-center rounded-full bg-accent/10 px-1.5 py-0.5 text-xs font-medium text-accent">
+                Nova
+              </span>
+            )}
           </div>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">
             {tool.name}
