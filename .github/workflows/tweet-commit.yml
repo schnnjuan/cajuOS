@@ -24,13 +24,11 @@ jobs:
               -d "$(jq -n --arg msg "$COMMIT_MSG" '{contents:[{parts:[{text: ("Rewrite this git commit as 1 tweet in Brazilian Portuguese PT-BR, max 200 chars, natural dev sharing progress, no hashtags: " + $msg)}]}]}')")
             TWEET=$(echo "$RESP" | jq -r '.candidates[0].content.parts[0].text // empty')
             [ -n "$TWEET" ] && break
-            [ $i -lt 3 ] && sleep 15
+            [ $i -lt 3 ] && sleep 15 || true
           done
 
           if [ -z "$TWEET" ]; then
-            TWEET="🛠️ ${COMMIT_MSG}
-
-cajuos.dev"
+            TWEET="${COMMIT_MSG} - cajuos.dev"
           fi
 
           SCHEDULE=$(date -u -d "+2 minutes" +"%Y-%m-%dT%H:%M:%SZ")
