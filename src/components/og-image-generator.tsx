@@ -22,7 +22,7 @@ type Format = "png" | "jpeg" | "webp";
 
 interface TemplateConfig {
   title: string; subtitle: string; paletteId: string; sizeIdx: number;
-  layout: LayoutMode; decorIcon: string; format: Format; overlay: number; proceduralSeed: number | null; textShadow: number;
+  layout: LayoutMode; decorIcon: string; format: Format; overlay: number; proceduralSeed: number | null; textShadow: number; fontId: string;
 }
 interface SavedTemplate {
   id: string; name: string; config: TemplateConfig; createdAt: string;
@@ -62,6 +62,18 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "bg",     label: "Fundo" },
   { id: "export", label: "Exportar" },
 ];
+
+const FONT_OPTIONS = [
+  { id: "inter", name: "Inter", family: "'Inter', sans-serif" },
+  { id: "dm-sans", name: "DM Sans", family: "'DM Sans', sans-serif" },
+  { id: "space-grotesk", name: "Space Grotesk", family: "'Space Grotesk', sans-serif" },
+];
+
+const FONT_URLS: Record<string, string> = {
+  "inter": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap",
+  "dm-sans": "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap",
+  "space-grotesk": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap",
+};
 
 // Seeded PRNG (mulberry32)
 function mulberry32(a: number): () => number {
@@ -172,7 +184,7 @@ export default function OgImageGenerator() {
   const [paletteId, setPaletteId] = useState("classic");
   const [sizeIdx, setSizeIdx] = useState(0);
   const [layout, setLayout] = useState<LayoutMode>("center");
-  const [fontFamily, setFontFamily] = useState("Inter, system-ui, sans-serif");
+  const [fontId, setFontId] = useState("inter");
   const [downloading, setDownloading] = useState(false);
   const [copying, setCopying] = useState(false);
   const [copyError, setCopyError] = useState(false);
@@ -189,6 +201,8 @@ export default function OgImageGenerator() {
   const [usageToday, setUsageToday] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [textShadow, setTextShadow] = useState(0);
+  const loadedFonts = useRef(new Set<string>());
+  const [fontLoading, setFontLoading] = useState(false);
 
   const sizePreset = SIZE_PRESETS[sizeIdx];
   const W = sizePreset.w; const H = sizePreset.h;
@@ -196,9 +210,17 @@ export default function OgImageGenerator() {
   const showEmojiWarning = hasEmoji(title) || hasEmoji(subtitle);
 
   useEffect(() => {
-    const cssFont = getComputedStyle(document.documentElement).getPropertyValue("--font-geist-sans").trim();
-    if (cssFont) setFontFamily(`${cssFont}, Inter, system-ui, sans-serif`);
-  }, []);
+    const loadFont = async (id: string) => {
+      if (loadedFonts.current.has(id)) return;
+      const url = FONT_URLS[id]; if (!url) return;
+      const link = document.createElement("link"); link.rel = "stylesheet"; link.href = url;
+      document.head.appendChild(link);
+      try { await document.fonts.load("700 1em " + FONT_OPTIONS.find(f => f.id === id)?.family); } catch {}
+      loadedFonts.current.add(id);
+    };
+    setFontLoading(true);
+    loadFont(fontId).then(() => setFontLoading(false));
+  }, [fontId]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -247,9 +269,10 @@ export default function OgImageGenerator() {
 
   const render = useCallback(() => {
     const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext("2d"); if (!ctx) return;
-    drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow);
+    const ff = FONT_OPTIONS.find(f => f.id === fontId)?.family ?? "'Inter', sans-serif";
+    drawOgImage(ctx, W, H, title, subtitle, palette, ff, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow);
     setShimmer(false);
-  }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow]);
+  }, [W, H, title, subtitle, palette, fontId, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow]);
 
   useEffect(() => {
     cancelAnimationFrame(rafRef.current);
@@ -314,7 +337,7 @@ export default function OgImageGenerator() {
 
   const saveTemplate = (name: string) => {
     if (!name.trim()) return;
-    const config: TemplateConfig = { title, subtitle, paletteId, sizeIdx, layout, decorIcon, format, overlay, proceduralSeed, textShadow };
+    const config: TemplateConfig = { title, subtitle, paletteId, sizeIdx, layout, decorIcon, format, overlay, proceduralSeed, textShadow, fontId };
     setTemplates(prev => [{ id: Date.now().toString(), name: name.trim(), config, createdAt: new Date().toISOString() }, ...prev]);
     setShowSaveInput(false); setTemplateName("");
   };
@@ -322,7 +345,7 @@ export default function OgImageGenerator() {
   const loadTemplate = (t: SavedTemplate) => {
     setTitle(t.config.title); setSubtitle(t.config.subtitle); setPaletteId(t.config.paletteId);
     setSizeIdx(t.config.sizeIdx); setLayout(t.config.layout); setDecorIcon(t.config.decorIcon);
-    setFormat(t.config.format); setOverlay(t.config.overlay); setProceduralSeed(t.config.proceduralSeed); setTextShadow(t.config.textShadow ?? 0);
+    setFormat(t.config.format); setOverlay(t.config.overlay); setProceduralSeed(t.config.proceduralSeed); setTextShadow(t.config.textShadow ?? 0); setFontId(t.config.fontId ?? "inter");
   };
 
   const deleteTemplate = (id: string) => setTemplates(prev => prev.filter(t => t.id !== id));
@@ -428,6 +451,16 @@ export default function OgImageGenerator() {
                   <span className="inline-block h-3.5 w-3.5 rounded border" style={{ backgroundColor: p.bg, borderColor: paletteId === p.id ? p.bg : p.text + "30" }} />
                   {p.name}
                 </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium">Fonte</label>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {FONT_OPTIONS.map((f) => (
+                <button key={f.id} onClick={() => setFontId(f.id)}
+                  className={`pressable rounded-md border px-2.5 py-1.5 text-xs ${fontId === f.id ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground"} ${fontLoading && fontId === f.id ? "animate-pulse" : ""}`}
+                >{f.name}</button>
               ))}
             </div>
           </div>
