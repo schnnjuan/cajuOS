@@ -21,7 +21,7 @@ jobs:
           for i in 1 2 3; do
             RESP=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}" \
               -H "Content-Type: application/json" \
-              -d "$(jq -n --arg msg "$COMMIT_MSG" '{contents:[{parts:[{text: ("Rewrite this git commit as 1 tweet in Brazilian Portuguese PT-BR, max 200 chars, natural dev sharing progress, no hashtags: " + $msg)}]}]}')")
+              -d "$(jq -n --arg msg "$COMMIT_MSG" '{contents:[{parts:[{text: ("voce e um dev solo building in public. NÃO robo de marketing. Reescreva o commit como 1 tweet PT-BR, max 200 chars. REGRAS: nao pare IA (sem estamos felizes, animado em anunciar, emoji excesso, hashtags, markdown). pare dev real: eu/tao/fiz/soltei/quebrei/arrumei — tom cru. conte o que rolou + por que importa. NUNCA comece com Acabei de. injete contexto se commit for boring. FORMATAÇÃO: [o que fiz] + [por que/o que tava quebrado/proximo]. EXEMPLOS: BOA: arrumei o layout do card no mobile. tava horroroso em tela pequena, agora quebra em 3 colunas. BOA: subi o gerador de OG image. 1200x630, titulo + desc, roda no browser. nao abro mais o canva. RUIM: Estamos muito felizes em anunciar o lançamento! RUIM: Acabei de fazer um commit incrivel! #dev. Commit: " + $msg)}]}]}')")
             TWEET=$(echo "$RESP" | jq -r '.candidates[0].content.parts[0].text // empty')
             [ -n "$TWEET" ] && break
             [ $i -lt 3 ] && sleep 15 || true
