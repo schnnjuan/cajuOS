@@ -623,6 +623,36 @@ export default function OgImageGenerator() {
         {isDragging && <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/80 text-sm font-medium text-foreground backdrop-blur-sm">Solte a imagem aqui</div>}
       </div>
 
+      {/* Gallery */}
+      <details className="group rounded-xl border border-border">
+        <summary className="pressable flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/30">
+          <span>Inspiração</span>
+          <span className="text-xs text-muted group-open:hidden">Mostrar exemplos</span>
+          <span className="hidden text-xs text-muted group-open:inline">Fechar</span>
+        </summary>
+        <div className="grid grid-cols-2 gap-3 border-t border-border p-4 sm:grid-cols-3">
+          {[
+            { name: "Twitter", palette: "classic", icon: "flame", layout: "center" as const, fontId: "inter", fontWeight: 700, letterSpacing: 0, textShadow: 0, title: "Como gerar sua imagem OG em 10 segundos", subtitle: "cajuos.dev" },
+            { name: "LinkedIn", palette: "slate", icon: "pin", layout: "left" as const, fontId: "dm-sans", fontWeight: 600, letterSpacing: 0.5, textShadow: 1, title: "Tool #1 está no ar", subtitle: "OG Image Generator" },
+            { name: "Blog", palette: "warm", icon: "sparkle", layout: "center" as const, fontId: "space-grotesk", fontWeight: 800, letterSpacing: 0, textShadow: 0, title: "O que aprendi construindo uma tool por semana", subtitle: "Post-mortem" },
+            { name: "Produto", palette: "deep", icon: "diamond", layout: "left" as const, fontId: "inter", fontWeight: 700, letterSpacing: 1, textShadow: 2, title: "CajuOS — Ferramentas que resolvem", subtitle: "Uma tool por semana" },
+            { name: "Minimal", palette: "minimal", icon: "star", layout: "center" as const, fontId: "space-grotesk", fontWeight: 500, letterSpacing: 0, textShadow: 0, title: "Design com propósito", subtitle: "Menos é mais" },
+            { name: "Devlog", palette: "slate", icon: "bolt", layout: "left" as const, fontId: "dm-sans", fontWeight: 800, letterSpacing: 0.5, textShadow: 1, title: "Dia 7: deploy as 23h47", subtitle: "O Safari quase me venceu" },
+          ].map((ex, i) => (
+            <button key={i} onClick={() => { setTitle(ex.title); setSubtitle(ex.subtitle); setPaletteId(ex.palette); setLayout(ex.layout); setDecorIcon(ex.icon); setFontId(ex.fontId); setFontWeight(ex.fontWeight); setLetterSpacing(ex.letterSpacing); setTextShadow(ex.textShadow); setSizeIdx(0); }}
+              className="pressable rounded-lg border border-border bg-card p-3 text-left text-xs hover:border-foreground"
+            >
+              <div className="mb-1.5 flex items-center gap-1.5">
+                <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: PALETTES.find(p => p.id === ex.palette)?.bg }} />
+                <span className="font-medium text-foreground">{ex.name}</span>
+              </div>
+              <p className="truncate text-muted">{ex.title}</p>
+              <span className="mt-1 inline-block text-foreground/70">Usar este estilo →</span>
+            </button>
+          ))}
+        </div>
+      </details>
+
       <p role="status" aria-live="polite" className="sr-only">
         {downloading ? "Download iniciado" : copying ? "Imagem copiada" : copyError ? "Erro ao copiar" : "Pronto para uso"}
       </p>
