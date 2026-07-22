@@ -1,21 +1,23 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/schnnjuan/cajuOS/main/src/app/opengraph-image.png" alt="CajuOS">
+</p>
+
 # CajuOS
 
-Uma ferramenta útil por semana. Open source, roda no navegador, zero dependências externas.
+Uma tool por semana. Open source, roda no browser, zero dependências.
 
 [cajuos.dev](https://cajuos.dev)
 
 ## O que é
 
-CajuOS é um experimento público de lançar uma ferramenta útil por semana. Cada tool resolve um problema pequeno e real — sem cadastro, sem instalação, sem coletar dados.
-
-O código é aberto. As ferramentas client-side rodam 100% no navegador.
+Experimento público: lançar uma tool nova cada semana. Tudo client-side, sem cadastro, sem instalação, sem coleta de dados. Não guardo nada seu.
 
 ## Stack
 
-- [Next.js](https://nextjs.org) 16 (App Router) + Turbopack
+- [Next.js](https://nextjs.org) 16 + Turbopack
 - [Tailwind CSS](https://tailwindcss.com) v4
-- [MDX](https://mdxjs.com) para blog, docs e changelog
-- [Resend](https://resend.com) para magic-link auth
+- [MDX](https://mdxjs.com) pra blog, docs e changelog
+- [Resend](https://resend.com) pra magic-link auth
 - Deploy na [Vercel](https://vercel.com)
 
 ## Estrutura
@@ -24,63 +26,58 @@ O código é aberto. As ferramentas client-side rodam 100% no navegador.
 src/
 ├── app/
 │   ├── page.tsx              → landing
-│   ├── tools/                → páginas das tools
-│   ├── blog/                 → blog index + posts
+│   ├── tools/                → tools
+│   ├── blog/                 → blog
 │   ├── changelog/            → changelog
-│   ├── docs/                 → documentação por tool
-│   ├── admin/                → CMS protegido por magic-link
-│   └── api/                  → API routes (auth + content)
-├── components/               → componentes React
+│   ├── docs/                 → docs por tool
+│   ├── admin/                → CMS (magic-link)
+│   └── api/                  → routes
+├── components/               → React
 ├── lib/
-│   ├── tools.ts              → registry das tools
-│   ├── content.ts            → leitura de MDX
-│   ├── admin-content.ts      → save/read content via FS ou GitHub API
-│   └── auth.ts               → JWT sign/verify (jose)
+│   ├── tools.ts              → registry
+│   ├── content.ts            → le MDX
+│   ├── admin-content.ts      → salva MDX via FS ou GitHub API
+│   └── auth.ts               → JWT (jose)
 └── content/
-    ├── blog/                 → posts em MDX
-    ├── changelog/            → changelog entries em MDX
-    └── docs/                 → documentação em MDX
+    ├── blog/                 → posts MDX
+    ├── changelog/            → entries MDX
+    └── docs/                 → docs MDX
 ```
 
 ## Rodar local
 
 ```bash
 npm install
-cp .env.example .env.local   # preencha as chaves
-npm run dev                  # http://localhost:3000
+cp .env.example .env.local
+npm run dev
 ```
+
+`http://localhost:3000`
 
 ### Variáveis de ambiente
 
 | Variável | Obrigatória | Descrição |
 |---|---|---|
-| `RESEND_API_KEY` | Sim (admin) | API key do Resend pra enviar magic-link |
-| `JWT_SECRET` | Sim (admin) | String secreta pra assinar tokens de sessão |
-| `ADMIN_EMAIL` | Sim (admin) | Email que recebe o magic-link |
-| `GITHUB_TOKEN` | Opcional | Token pra salvar MDX via GitHub API em prod |
-| `NEXT_PUBLIC_UMAMI_SRC` | Não | URL do script Umami |
-| `NEXT_PUBLIC_UMAMI_ID` | Não | Website ID do Umami |
+| `RESEND_API_KEY` | Sim | Enviar magic-link |
+| `JWT_SECRET` | Sim | Assinar token de sessão |
+| `ADMIN_EMAIL` | Sim | Email do magic-link |
+| `GITHUB_TOKEN` | Opcional | Salvar MDX via API em prod |
+| `NEXT_PUBLIC_UMAMI_SRC` | Não | Umami script |
+| `NEXT_PUBLIC_UMAMI_ID` | Não | Umami ID |
 
-## Adicionar uma tool
+## Adicionar tool
 
-1. Adicione o objeto em `src/lib/tools.ts` (`slug`, `name`, `tagline`, `hasApi`, `launchedAt`)
-2. Opcional: crie o componente em `src/components/` e registre em `tool-components.ts`
-3. Adicione conteúdo:
-   - Blog: `src/content/blog/<slug>.mdx`
-   - Docs: `src/content/docs/<slug>.mdx`
-   - Changelog: `src/content/changelog/<slug>.mdx`
-4. O contador "Tool #N" no site é automático
+1. Registra em `src/lib/tools.ts` (slug, name, tagline, hasApi, launchedAt)
+2. Se tiver UI, cria componente em `src/components/` + `tool-components.ts`
+3. Escreve o conteúdo em MDX em `src/content/` (blog, docs, changelog)
+4. Contador "Tool #N" é automático
 
 ## Admin
 
-O painel admin em `/admin` permite criar e editar posts do blog e entradas do changelog via magic-link. A sessão dura 7 dias.
+`/admin` pra criar e editar blog/changelog via magic-link. Sessão dura 7 dias.
 
-Em desenvolvimento os arquivos são salvos localmente. Em produção, se `GITHUB_TOKEN` estiver configurado, os MDX são commitados via GitHub API.
+Em dev salva no filesystem. Em prod, se `GITHUB_TOKEN` existir, comita via GitHub API.
 
 ## Licença
 
-MIT — o site e as tools client-side são abertos.
-
----
-
-Feito com ☕ e o desejo de não ter que abrir Photoshop pra gerar uma imagem OG.
+MIT.
