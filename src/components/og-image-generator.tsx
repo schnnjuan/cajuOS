@@ -242,12 +242,20 @@ export default function OgImageGenerator() {
     window.addEventListener("keydown", handler); return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  const rafRef = useRef(0);
+  const [shimmer, setShimmer] = useState(true);
+
   const render = useCallback(() => {
     const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext("2d"); if (!ctx) return;
     drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow);
+    setShimmer(false);
   }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow]);
 
-  useEffect(() => { render(); }, [render]);
+  useEffect(() => {
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(render);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [render]);
 
   const handleDownload = () => {
     const canvas = canvasRef.current; if (!canvas) return;
@@ -551,7 +559,8 @@ export default function OgImageGenerator() {
         className={`relative overflow-hidden rounded-xl border bg-card transition-colors ${isDragging ? "border-foreground bg-foreground/5" : "border-border"}`}
       >
         <span className="absolute left-2 top-2 z-10 rounded-md bg-background/80 px-2 py-0.5 text-xs font-medium text-muted backdrop-blur-sm">{SIZE_PRESETS[sizeIdx].label} {W}×{H}</span>
-        <canvas ref={canvasRef} width={W} height={H} className="w-full" style={{ aspectRatio: `${W}/${H}`, display: "block", maxWidth: `${W}px` }} />
+        <canvas ref={canvasRef} width={W} height={H} className={`w-full ${shimmer ? "invisible" : ""}`} style={{ aspectRatio: `${W}/${H}`, display: "block", maxWidth: `${W}px` }} />
+        {shimmer && <div className="absolute inset-0 animate-pulse rounded-xl bg-muted" />}
         {isDragging && <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/80 text-sm font-medium text-foreground backdrop-blur-sm">Solte a imagem aqui</div>}
       </div>
 
