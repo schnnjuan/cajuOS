@@ -22,7 +22,7 @@ type Format = "png" | "jpeg" | "webp";
 
 interface TemplateConfig {
   title: string; subtitle: string; paletteId: string; sizeIdx: number;
-  layout: LayoutMode; decorIcon: string; format: Format; overlay: number; proceduralSeed: number | null; textShadow: number; fontId: string;
+  layout: LayoutMode; decorIcon: string; format: Format; overlay: number; proceduralSeed: number | null; textShadow: number; fontId: string; fontWeight: number; letterSpacing: number;
 }
 interface SavedTemplate {
   id: string; name: string; config: TemplateConfig; createdAt: string;
@@ -103,11 +103,11 @@ function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "og-image";
 }
 
-function measureAndFit(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, baseSize: number, fontFamily: string): { size: number; fitted: string } {
+function measureAndFit(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, baseSize: number, fontFamily: string, fontWeight: number = 700): { size: number; fitted: string } {
   let size = baseSize;
   let fitted = text;
   while (size >= Math.round(28 * (baseSize / 64))) {
-    ctx.font = `700 ${size}px ${fontFamily}`;
+    ctx.font = `${fontWeight} ${size}px ${fontFamily}`;
     if (ctx.measureText(fitted).width <= maxWidth) break;
     if (size <= 32 && fitted.length > 10) fitted = truncate(fitted, Math.max(10, fitted.length - 5));
     else size = Math.max(Math.round(28 * (baseSize / 64)), size - 4);
@@ -147,7 +147,7 @@ function drawProceduralBg(ctx: CanvasRenderingContext2D, W: number, H: number, s
 }
 
 // ── Canvas drawing ─────────────────────────────────────
-function drawOgImage(ctx: CanvasRenderingContext2D, W: number, H: number, title: string, subtitle: string, palette: (typeof PALETTES)[number], fontFamily: string, logoImg: HTMLImageElement | null, bgImg: HTMLImageElement | null, layout: LayoutMode, overlay: number, decorIconId: string, proceduralSeed: number | null, textShadow: number = 0) {
+function drawOgImage(ctx: CanvasRenderingContext2D, W: number, H: number, title: string, subtitle: string, palette: (typeof PALETTES)[number], fontFamily: string, logoImg: HTMLImageElement | null, bgImg: HTMLImageElement | null, layout: LayoutMode, overlay: number, decorIconId: string, proceduralSeed: number | null, textShadow: number = 0, fontWeight: number = 700, letterSpacing: number = 0) {
   const { bg, text, accent, watermark } = palette; const s = W / 1200; const pad = Math.round(32 * s); const isSquare = W > H * 1.1;
   if (proceduralSeed !== null) drawProceduralBg(ctx, W, H, proceduralSeed);
   else if (bgImg) drawBgImage(ctx, bgImg, W, H, overlay);
@@ -158,16 +158,18 @@ function drawOgImage(ctx: CanvasRenderingContext2D, W: number, H: number, title:
   const forceLeft = layout === "left" || logoRight > 0; const titleX = forceLeft && logoRight > 0 ? logoRight : forceLeft ? pad : W / 2; const textAlign: CanvasTextAlign = forceLeft ? "left" : "center";
   if (decorIconId) { const iconDef = DECOR_ICON_MAP.get(decorIconId); if (iconDef) { const iconSize = Math.round(52 * s * Math.min(1, H / 630)); const decorY = isSquare ? Math.round(H * 0.22) : Math.round(H * 0.14); const half = iconSize / 2; ctx.save(); ctx.translate(W / 2 - half, decorY - iconSize); ctx.scale(iconSize / 24, iconSize / 24); ctx.strokeStyle = text; ctx.lineWidth = 1.6; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke(new Path2D(iconDef.path)); ctx.restore(); } }
   if (textShadow > 0) { ctx.shadowColor = textShadow === 1 ? "rgba(0,0,0,0.25)" : "rgba(0,0,0,0.5)"; ctx.shadowBlur = textShadow === 1 ? Math.round(8 * s) : Math.round(16 * s); }
+  if (letterSpacing > 0) ctx.letterSpacing = `${letterSpacing}px`;
   const maxTitleChars = Math.round(62 * Math.min(1, s)); const displayTitle = truncate(title || "Seu título aqui", maxTitleChars); ctx.fillStyle = text; ctx.textBaseline = "middle"; const baseFontSize = Math.round(64 * s * Math.min(1, H / 630)); const maxLineW = Math.round(980 * s);
   const words = displayTitle.split(" "); const lines: string[] = []; let currentLine = "";
-  for (const word of words) { const test = currentLine ? currentLine + " " + word : word; ctx.font = `700 ${baseFontSize}px ${fontFamily}`; if (ctx.measureText(test).width > maxLineW && currentLine) { lines.push(currentLine); currentLine = word; } else currentLine = test; }
+  for (const word of words) { const test = currentLine ? currentLine + " " + word : word; ctx.font = `${fontWeight} ${baseFontSize}px ${fontFamily}`; if (ctx.measureText(test).width > maxLineW && currentLine) { lines.push(currentLine); currentLine = word; } else currentLine = test; }
   if (currentLine) lines.push(currentLine);
   let titleLines = lines; if (lines.length > 2) { titleLines = [lines[0], lines.slice(1).join(" ")]; titleLines[1] = truncate(titleLines[1], maxTitleChars); }
-  let fontSize = baseFontSize; for (const line of titleLines) { ctx.font = `700 ${baseFontSize}px ${fontFamily}`; if (ctx.measureText(line).width > maxLineW) { const result = measureAndFit(ctx, line, maxLineW, baseFontSize, fontFamily); fontSize = Math.min(fontSize, result.size); } }
-  ctx.font = `700 ${fontSize}px ${fontFamily}`; const titleY = isSquare ? Math.round(H * 0.42) : titleLines.length > 1 ? Math.round(H * 0.28) : Math.round(H * 0.35);
+  let fontSize = baseFontSize; for (const line of titleLines) { ctx.font = `${fontWeight} ${baseFontSize}px ${fontFamily}`; if (ctx.measureText(line).width > maxLineW) { const result = measureAndFit(ctx, line, maxLineW, baseFontSize, fontFamily, fontWeight); fontSize = Math.min(fontSize, result.size); } }
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`; const titleY = isSquare ? Math.round(H * 0.42) : titleLines.length > 1 ? Math.round(H * 0.28) : Math.round(H * 0.35);
   ctx.textAlign = textAlign;
   if (titleLines.length === 1) ctx.fillText(titleLines[0], titleX, titleY);
   else { const lineH = Math.min(fontSize + Math.round(8 * s), Math.round(72 * s)); ctx.fillText(titleLines[0], titleX, titleY - lineH / 2); ctx.fillText(titleLines[1], titleX, titleY + lineH / 2); }
+  ctx.letterSpacing = "0px";
   if (subtitle) { const subSize = Math.round(28 * s); ctx.fillStyle = watermark; ctx.font = `400 ${subSize}px ${fontFamily}`; ctx.textAlign = textAlign; ctx.textBaseline = "top"; ctx.fillText(truncate(subtitle, Math.round(90 * Math.min(1, s))), titleX, titleY + (titleLines.length > 1 ? Math.round(56 * s) : Math.round(36 * s)) + fontSize * 0.3); }
   ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
   const wmSize = Math.round(16 * s); ctx.fillStyle = watermark; ctx.font = `500 ${wmSize}px ${fontFamily}`; ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("cajuos.dev", W - pad, H - Math.round(24 * s));
@@ -203,6 +205,8 @@ export default function OgImageGenerator() {
   const [textShadow, setTextShadow] = useState(0);
   const loadedFonts = useRef(new Set<string>());
   const [fontLoading, setFontLoading] = useState(false);
+  const [fontWeight, setFontWeight] = useState(700);
+  const [letterSpacing, setLetterSpacing] = useState(0);
 
   const sizePreset = SIZE_PRESETS[sizeIdx];
   const W = sizePreset.w; const H = sizePreset.h;
@@ -270,9 +274,9 @@ export default function OgImageGenerator() {
   const render = useCallback(() => {
     const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext("2d"); if (!ctx) return;
     const ff = FONT_OPTIONS.find(f => f.id === fontId)?.family ?? "'Inter', sans-serif";
-    drawOgImage(ctx, W, H, title, subtitle, palette, ff, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow);
+    drawOgImage(ctx, W, H, title, subtitle, palette, ff, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow, fontWeight, letterSpacing);
     setShimmer(false);
-  }, [W, H, title, subtitle, palette, fontId, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow]);
+  }, [W, H, title, subtitle, palette, fontId, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow, fontWeight, letterSpacing]);
 
   useEffect(() => {
     cancelAnimationFrame(rafRef.current);
@@ -337,7 +341,7 @@ export default function OgImageGenerator() {
 
   const saveTemplate = (name: string) => {
     if (!name.trim()) return;
-    const config: TemplateConfig = { title, subtitle, paletteId, sizeIdx, layout, decorIcon, format, overlay, proceduralSeed, textShadow, fontId };
+    const config: TemplateConfig = { title, subtitle, paletteId, sizeIdx, layout, decorIcon, format, overlay, proceduralSeed, textShadow, fontId, fontWeight, letterSpacing };
     setTemplates(prev => [{ id: Date.now().toString(), name: name.trim(), config, createdAt: new Date().toISOString() }, ...prev]);
     setShowSaveInput(false); setTemplateName("");
   };
@@ -345,7 +349,7 @@ export default function OgImageGenerator() {
   const loadTemplate = (t: SavedTemplate) => {
     setTitle(t.config.title); setSubtitle(t.config.subtitle); setPaletteId(t.config.paletteId);
     setSizeIdx(t.config.sizeIdx); setLayout(t.config.layout); setDecorIcon(t.config.decorIcon);
-    setFormat(t.config.format); setOverlay(t.config.overlay); setProceduralSeed(t.config.proceduralSeed); setTextShadow(t.config.textShadow ?? 0); setFontId(t.config.fontId ?? "inter");
+    setFormat(t.config.format); setOverlay(t.config.overlay); setProceduralSeed(t.config.proceduralSeed); setTextShadow(t.config.textShadow ?? 0); setFontId(t.config.fontId ?? "inter"); setFontWeight(t.config.fontWeight ?? 700); setLetterSpacing(t.config.letterSpacing ?? 0);
   };
 
   const deleteTemplate = (id: string) => setTemplates(prev => prev.filter(t => t.id !== id));
@@ -462,6 +466,28 @@ export default function OgImageGenerator() {
                   className={`pressable rounded-md border px-2.5 py-1.5 text-xs ${fontId === f.id ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground"} ${fontLoading && fontId === f.id ? "animate-pulse" : ""}`}
                 >{f.name}</button>
               ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium">Peso</label>
+              <div className="mt-1 flex gap-1.5">
+                {[500, 600, 700, 800].map((w) => (
+                  <button key={w} onClick={() => setFontWeight(w)}
+                    className={`pressable rounded-md border px-2.5 py-1.5 text-xs ${fontWeight === w ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground"}`}
+                  >{w}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium">Espaçamento</label>
+              <div className="mt-1 flex gap-1.5">
+                {[{ label: "Normal", value: 0 }, { label: "0.5px", value: 0.5 }, { label: "1px", value: 1 }, { label: "2px", value: 2 }].map((o) => (
+                  <button key={o.value} onClick={() => setLetterSpacing(o.value)}
+                    className={`pressable rounded-md border px-2.5 py-1.5 text-xs ${letterSpacing === o.value ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground"}`}
+                  >{o.label}</button>
+                ))}
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
