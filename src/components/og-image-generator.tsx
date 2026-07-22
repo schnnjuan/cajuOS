@@ -20,6 +20,14 @@ const SIZE_PRESETS = [
 type LayoutMode = "center" | "left";
 type Format = "png" | "jpeg" | "webp";
 
+interface TemplateConfig {
+  title: string; subtitle: string; paletteId: string; sizeIdx: number;
+  layout: LayoutMode; decorIcon: string; format: Format; overlay: number; proceduralSeed: number | null; textShadow: number;
+}
+interface SavedTemplate {
+  id: string; name: string; config: TemplateConfig; createdAt: string;
+}
+
 // ── Decor icons (SVG path data for canvas Path2D) ──────
 interface DecorIconDef {
   id: string;
@@ -127,7 +135,7 @@ function drawProceduralBg(ctx: CanvasRenderingContext2D, W: number, H: number, s
 }
 
 // ── Canvas drawing ─────────────────────────────────────
-function drawOgImage(ctx: CanvasRenderingContext2D, W: number, H: number, title: string, subtitle: string, palette: (typeof PALETTES)[number], fontFamily: string, logoImg: HTMLImageElement | null, bgImg: HTMLImageElement | null, layout: LayoutMode, overlay: number, decorIconId: string, proceduralSeed: number | null) {
+function drawOgImage(ctx: CanvasRenderingContext2D, W: number, H: number, title: string, subtitle: string, palette: (typeof PALETTES)[number], fontFamily: string, logoImg: HTMLImageElement | null, bgImg: HTMLImageElement | null, layout: LayoutMode, overlay: number, decorIconId: string, proceduralSeed: number | null, textShadow: number = 0) {
   const { bg, text, accent, watermark } = palette; const s = W / 1200; const pad = Math.round(32 * s); const isSquare = W > H * 1.1;
   if (proceduralSeed !== null) drawProceduralBg(ctx, W, H, proceduralSeed);
   else if (bgImg) drawBgImage(ctx, bgImg, W, H, overlay);
@@ -137,6 +145,7 @@ function drawOgImage(ctx: CanvasRenderingContext2D, W: number, H: number, title:
   if (logoImg) { const scale = Math.min(1, logoMaxW / logoImg.width); const lw = logoImg.width * scale; const lh = logoImg.height * scale; ctx.drawImage(logoImg, pad, pad, lw, lh); logoRight = pad + lw + Math.round(16 * s); }
   const forceLeft = layout === "left" || logoRight > 0; const titleX = forceLeft && logoRight > 0 ? logoRight : forceLeft ? pad : W / 2; const textAlign: CanvasTextAlign = forceLeft ? "left" : "center";
   if (decorIconId) { const iconDef = DECOR_ICON_MAP.get(decorIconId); if (iconDef) { const iconSize = Math.round(52 * s * Math.min(1, H / 630)); const decorY = isSquare ? Math.round(H * 0.22) : Math.round(H * 0.14); const half = iconSize / 2; ctx.save(); ctx.translate(W / 2 - half, decorY - iconSize); ctx.scale(iconSize / 24, iconSize / 24); ctx.strokeStyle = text; ctx.lineWidth = 1.6; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke(new Path2D(iconDef.path)); ctx.restore(); } }
+  if (textShadow > 0) { ctx.shadowColor = textShadow === 1 ? "rgba(0,0,0,0.25)" : "rgba(0,0,0,0.5)"; ctx.shadowBlur = textShadow === 1 ? Math.round(8 * s) : Math.round(16 * s); }
   const maxTitleChars = Math.round(62 * Math.min(1, s)); const displayTitle = truncate(title || "Seu título aqui", maxTitleChars); ctx.fillStyle = text; ctx.textBaseline = "middle"; const baseFontSize = Math.round(64 * s * Math.min(1, H / 630)); const maxLineW = Math.round(980 * s);
   const words = displayTitle.split(" "); const lines: string[] = []; let currentLine = "";
   for (const word of words) { const test = currentLine ? currentLine + " " + word : word; ctx.font = `700 ${baseFontSize}px ${fontFamily}`; if (ctx.measureText(test).width > maxLineW && currentLine) { lines.push(currentLine); currentLine = word; } else currentLine = test; }
@@ -148,6 +157,7 @@ function drawOgImage(ctx: CanvasRenderingContext2D, W: number, H: number, title:
   if (titleLines.length === 1) ctx.fillText(titleLines[0], titleX, titleY);
   else { const lineH = Math.min(fontSize + Math.round(8 * s), Math.round(72 * s)); ctx.fillText(titleLines[0], titleX, titleY - lineH / 2); ctx.fillText(titleLines[1], titleX, titleY + lineH / 2); }
   if (subtitle) { const subSize = Math.round(28 * s); ctx.fillStyle = watermark; ctx.font = `400 ${subSize}px ${fontFamily}`; ctx.textAlign = textAlign; ctx.textBaseline = "top"; ctx.fillText(truncate(subtitle, Math.round(90 * Math.min(1, s))), titleX, titleY + (titleLines.length > 1 ? Math.round(56 * s) : Math.round(36 * s)) + fontSize * 0.3); }
+  ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
   const wmSize = Math.round(16 * s); ctx.fillStyle = watermark; ctx.font = `500 ${wmSize}px ${fontFamily}`; ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("cajuos.dev", W - pad, H - Math.round(24 * s));
 }
 
@@ -173,6 +183,12 @@ export default function OgImageGenerator() {
   const [format, setFormat] = useState<Format>("png");
   const [proceduralSeed, setProceduralSeed] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("style");
+  const [templates, setTemplates] = useState<SavedTemplate[]>([]);
+  const [showSaveInput, setShowSaveInput] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [usageToday, setUsageToday] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [textShadow, setTextShadow] = useState(0);
 
   const sizePreset = SIZE_PRESETS[sizeIdx];
   const W = sizePreset.w; const H = sizePreset.h;
@@ -196,6 +212,29 @@ export default function OgImageGenerator() {
   }, []);
 
   useEffect(() => {
+    const saved = localStorage.getItem("cajuos:og-presets");
+    if (saved) try { setTemplates(JSON.parse(saved)); } catch {}
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("cajuos:og-presets", JSON.stringify(templates));
+  }, [templates]);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("cajuos:og-usage");
+    if (raw) try { const d = JSON.parse(raw); if (d.date === new Date().toDateString()) setUsageToday(d.count); } catch {}
+  }, []);
+
+  const trackUsage = () => {
+    const today = new Date().toDateString();
+    const raw = localStorage.getItem("cajuos:og-usage");
+    let count = 1;
+    if (raw) try { const d = JSON.parse(raw); if (d.date === today) count = d.count + 1; } catch {}
+    localStorage.setItem("cajuos:og-usage", JSON.stringify({ date: today, count }));
+    setUsageToday(count);
+  };
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Enter" && e.target instanceof HTMLInputElement) (document.querySelector<HTMLButtonElement>('[data-action="download"]'))?.click();
       if ((e.ctrlKey || e.metaKey) && e.key === "c" && !e.target || e.target instanceof HTMLInputElement) (document.querySelector<HTMLButtonElement>('[data-action="copy"]'))?.click();
@@ -205,8 +244,8 @@ export default function OgImageGenerator() {
 
   const render = useCallback(() => {
     const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext("2d"); if (!ctx) return;
-    drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed);
-  }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed]);
+    drawOgImage(ctx, W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow);
+  }, [W, H, title, subtitle, palette, fontFamily, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow]);
 
   useEffect(() => { render(); }, [render]);
 
@@ -215,7 +254,7 @@ export default function OgImageGenerator() {
     const mime = format === "jpeg" ? "image/jpeg" : format === "webp" ? "image/webp" : "image/png";
     const ext = format === "jpeg" ? "jpg" : format;
     canvas.toBlob((blob) => {
-      if (!blob) return; setDownloading(true); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${slugify(title)}-og-image.${ext}`; a.style.display = "none"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); setTimeout(() => setDownloading(false), 1500);
+      if (!blob) return; trackUsage(); setDownloading(true); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${slugify(title)}-og-image.${ext}`; a.style.display = "none"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); setTimeout(() => setDownloading(false), 1500);
     }, mime, 0.92);
   };
 
@@ -223,7 +262,7 @@ export default function OgImageGenerator() {
     const canvas = canvasRef.current; if (!canvas) return;
     canvas.toBlob(async (blob) => {
       if (!blob) return;
-      try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); setCopying(true); setTimeout(() => setCopying(false), 1500); }
+      try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); trackUsage(); setCopying(true); setTimeout(() => setCopying(false), 1500); }
       catch { setCopyError(true); setTimeout(() => setCopyError(false), 2000); }
     }, "image/png");
   };
@@ -247,12 +286,38 @@ export default function OgImageGenerator() {
   const removeLogo = () => setLogoImg(null);
   const removeBg = () => { setBgImg(null); setProceduralSeed(null); };
 
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation(); setIsDragging(false);
+    const file = e.dataTransfer.files[0]; if (!file || !file.type.startsWith("image/")) return;
+    readImage(file, (img) => {
+      const isSquare = img.width < 200 && img.height < 200;
+      if (isSquare) setLogoImg(img); else { setBgImg(img); setProceduralSeed(null); }
+    });
+  };
+
   const applySocialPreset = (key: string) => {
     const p = SOCIAL_PRESETS[key]; if (!p) return;
     setSizeIdx(p.size); setLayout(p.layout); setPaletteId(p.palette); setDecorIcon(p.icon);
   };
 
   const generateProcedural = () => { setBgImg(null); setProceduralSeed(Math.floor(Math.random() * 2147483647)); };
+
+  const saveTemplate = (name: string) => {
+    if (!name.trim()) return;
+    const config: TemplateConfig = { title, subtitle, paletteId, sizeIdx, layout, decorIcon, format, overlay, proceduralSeed, textShadow };
+    setTemplates(prev => [{ id: Date.now().toString(), name: name.trim(), config, createdAt: new Date().toISOString() }, ...prev]);
+    setShowSaveInput(false); setTemplateName("");
+  };
+
+  const loadTemplate = (t: SavedTemplate) => {
+    setTitle(t.config.title); setSubtitle(t.config.subtitle); setPaletteId(t.config.paletteId);
+    setSizeIdx(t.config.sizeIdx); setLayout(t.config.layout); setDecorIcon(t.config.decorIcon);
+    setFormat(t.config.format); setOverlay(t.config.overlay); setProceduralSeed(t.config.proceduralSeed); setTextShadow(t.config.textShadow ?? 0);
+  };
+
+  const deleteTemplate = (id: string) => setTemplates(prev => prev.filter(t => t.id !== id));
 
   const iconSvgForPreview = (d: DecorIconDef): string =>
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${d.path}"/></svg>`;
@@ -263,6 +328,43 @@ export default function OgImageGenerator() {
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted">Preencha os campos abaixo para gerar sua imagem Open Graph.</p>
+
+      <div className="flex items-center justify-between">
+        {usageToday > 0 && <p className="text-xs text-muted">Você gerou {usageToday} {usageToday === 1 ? "imagem" : "imagens"} hoje</p>}
+        <span className="text-xs text-muted">Enter baixa · Ctrl+C copia</span>
+      </div>
+
+      {/* Templates */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
+        <span className="text-xs font-medium text-muted">Templates</span>
+        <button onClick={() => setShowSaveInput(true)}
+          className="pressable rounded-md border border-border px-2 py-1 text-xs hover:border-foreground"
+        >+ Salvar</button>
+        {showSaveInput && (
+          <div className="flex items-center gap-1">
+            <input type="text" value={templateName} onChange={e => setTemplateName(e.target.value)}
+              placeholder="Nome" maxLength={24} autoFocus
+              className="w-28 rounded-md border border-border bg-background px-2 py-1 text-xs outline-none focus:border-foreground"
+            />
+            <button onClick={() => saveTemplate(templateName)}
+              className="pressable rounded-md bg-foreground px-2 py-1 text-xs text-background"
+            >OK</button>
+            <button onClick={() => { setShowSaveInput(false); setTemplateName(""); }}
+              className="pressable text-xs text-muted hover:text-foreground"
+            >Cancelar</button>
+          </div>
+        )}
+        {templates.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {templates.map(t => (
+              <div key={t.id} className="flex items-center gap-1 rounded-md border border-border px-2 py-1">
+                <button onClick={() => loadTemplate(t)} className="pressable text-xs hover:text-foreground">{t.name}</button>
+                <button onClick={() => deleteTemplate(t.id)} className="pressable text-muted hover:text-red-500 text-xs" aria-label={`Remover ${t.name}`}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Social presets */}
       <div className="flex flex-wrap gap-2">
@@ -359,6 +461,16 @@ export default function OgImageGenerator() {
               ))}
             </div>
           </div>
+          <div>
+            <label className="text-xs font-medium">Sombra do texto</label>
+            <div className="mt-1 flex gap-1.5">
+              {[{ label: "Nenhum", value: 0 }, { label: "Sutil", value: 1 }, { label: "Forte", value: 2 }].map((o) => (
+                <button key={o.label} onClick={() => setTextShadow(o.value)}
+                  className={`pressable rounded-md border px-2.5 py-1.5 text-xs ${textShadow === o.value ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground"}`}
+                >{o.label}</button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -426,13 +538,21 @@ export default function OgImageGenerator() {
             <button data-action="copy" onClick={handleCopy} disabled={copying}
               className={`pressable rounded-md border px-4 py-2 text-sm font-medium ${copyError ? "border-red-500 text-red-500" : copying ? "border-muted text-muted" : "border-border text-foreground hover:border-foreground"}`}
             >{copyError ? "Erro ao copiar" : copying ? "Copiado!" : "Copiar PNG"}</button>
+            <a href="https://x.com/intent/tweet?text=Acabei%20de%20gerar%20uma%20imagem%20OG%20com%20%40schnnjuan%20no%20CajuOS%20%F0%9F%93%B1&url=https%3A%2F%2Fcajuos.dev%2Ftools%2Fog-image" target="_blank" rel="noopener noreferrer"
+              className="pressable rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground hover:border-foreground"
+            >Tweetar essa OG</a>
           </div>
         </div>
       )}
 
       {/* Preview (always visible) */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div
+        onDragOver={handleDragOver} onDragEnter={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+        className={`relative overflow-hidden rounded-xl border bg-card transition-colors ${isDragging ? "border-foreground bg-foreground/5" : "border-border"}`}
+      >
+        <span className="absolute left-2 top-2 z-10 rounded-md bg-background/80 px-2 py-0.5 text-xs font-medium text-muted backdrop-blur-sm">{SIZE_PRESETS[sizeIdx].label} {W}×{H}</span>
         <canvas ref={canvasRef} width={W} height={H} className="w-full" style={{ aspectRatio: `${W}/${H}`, display: "block", maxWidth: `${W}px` }} />
+        {isDragging && <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/80 text-sm font-medium text-foreground backdrop-blur-sm">Solte a imagem aqui</div>}
       </div>
 
       <p role="status" aria-live="polite" className="sr-only">
