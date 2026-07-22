@@ -54,53 +54,38 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Timeline de tools */}
+      {/* Lançamentos */}
       <section className="mt-20">
         <h2 className="text-sm font-medium uppercase tracking-wide text-muted mb-6">
           Lançamentos
         </h2>
-        <div className="pl-1">
+        <div className="flex flex-col gap-3">
           {tools.length > 0 ? (
             tools.map((tool, i) => (
-              <div key={tool.slug} className="flex gap-4 group">
-                <div className="flex flex-col items-center">
-                  <span className="flex h-3 w-3 shrink-0 rounded-full bg-accent" />
-                  {i < tools.length - 1 && <div className="w-px flex-1 bg-border" />}
+              <Link
+                key={tool.slug}
+                href={`/tools/${tool.slug}`}
+                className="card-hover group flex items-start gap-4 rounded-xl border border-border bg-card p-5"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                  <ToolIcon slug={tool.slug} size={20} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium tracking-tight">{tool.name}</h3>
+                    <span className="text-xs text-accent tabular-nums">#{i + 1}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted">{tool.tagline}</p>
                 </div>
-                <div className={i < tools.length - 1 ? "pb-8 flex-1" : "flex-1"}>
-                  <Link
-                    href={`/tools/${tool.slug}`}
-                    className="flex items-center gap-3 rounded-xl border border-transparent p-3 transition-colors hover:border-border hover:bg-card sm:p-4"
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                      <ToolIcon slug={tool.slug} size={20} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium tracking-tight">{tool.name}</h3>
-                        <span className="text-xs text-accent tabular-nums">#{i + 1}</span>
-                      </div>
-                      <p className="text-sm text-muted mt-0.5">{tool.tagline}</p>
-                    </div>
-                  </Link>
-                </div>
-              </div>
+              </Link>
             ))
           ) : (
             <p className="text-sm text-muted">Nenhuma tool lançada ainda. Esta semana sai a primeira.</p>
           )}
 
           {/* Placeholder próxima tool */}
-          <div className="flex gap-4">
-            <div className="flex flex-col items-center">
-              <span className="relative flex h-3 w-3 shrink-0">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-accent/30" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-accent" />
-              </span>
-            </div>
-            <div className="flex-1 py-3 sm:py-4">
-              <p className="text-sm text-muted">Próxima tool essa semana</p>
-            </div>
+          <div className="rounded-xl border border-dashed border-border p-5">
+            <p className="text-sm text-muted">Próxima tool essa semana</p>
           </div>
         </div>
       </section>

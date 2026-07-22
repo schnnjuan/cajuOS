@@ -111,17 +111,7 @@ export function SiteHeader() {
                     : "hover:text-foreground hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                 }`}
               >
-                {n.href === "/experiment" ? (
-                  <span className="flex items-center gap-1.5">
-                    {n.label}
-                    <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-40" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
-                    </span>
-                  </span>
-                ) : (
-                  n.label
-                )}
+                {n.label}
               </Link>
             );
           })}
