@@ -34,3 +34,16 @@ A primeira tool do CajuOS chegou. O objetivo é simples: você digita um título
 - Warning de emoji — aviso se título/subtítulo contém emoji (não renderiza no canvas)
 - Aviso de limite de caracteres — contador `N/65` e `N/95` nos inputs
 - Atalhos de teclado — Enter dispara download, Ctrl+C copia imagem
+
+### v1.3 (22 Jul 2026)
+
+- **Templates** — salva/carrega presets no localStorage. Nomeie, salve e carregue com 1 clique.
+- **Fontes** — Inter, DM Sans e Space Grotesk via `next/font/google`. Troca instantânea.
+- **Peso e espaçamento** — controle de peso (500-800) e letter-spacing (0-2px) do título.
+- **Sombra do texto** — Nenhum/Sutil/Forte. Melhora legibilidade em fundo claro ou imagem.
+- **Drag & drop** — arraste uma imagem direto no preview. <200px vira logo, senão vira fundo.
+- **Galeria de exemplos** — 6 presets (Twitter, LinkedIn, Blog, Produto, Minimal, Devlog). Clique pra aplicar.
+- **Contador de uso** — "Você gerou N imagens hoje" com persistência diária.
+- **Botão Tweetar** — compartilhe a tool no X/Twitter com 1 clique.
+- **Badge de tamanho** — label "OG 1200×630" no canto do preview.
+- **Render com RAF** — `requestAnimationFrame` evita re-renders durante digitação. Shimmer enquanto carrega.

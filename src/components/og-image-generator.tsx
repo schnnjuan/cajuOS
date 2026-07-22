@@ -64,16 +64,10 @@ const TABS: { id: TabId; label: string }[] = [
 ];
 
 const FONT_OPTIONS = [
-  { id: "inter", name: "Inter", family: "'Inter', sans-serif" },
-  { id: "dm-sans", name: "DM Sans", family: "'DM Sans', sans-serif" },
-  { id: "space-grotesk", name: "Space Grotesk", family: "'Space Grotesk', sans-serif" },
+  { id: "inter", name: "Inter", variable: "--font-inter" },
+  { id: "dm-sans", name: "DM Sans", variable: "--font-dm-sans" },
+  { id: "space-grotesk", name: "Space Grotesk", variable: "--font-space-grotesk" },
 ];
-
-const FONT_URLS: Record<string, string> = {
-  "inter": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap",
-  "dm-sans": "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap",
-  "space-grotesk": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap",
-};
 
 // Seeded PRNG (mulberry32)
 function mulberry32(a: number): () => number {
@@ -203,8 +197,6 @@ export default function OgImageGenerator() {
   const [usageToday, setUsageToday] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [textShadow, setTextShadow] = useState(0);
-  const loadedFonts = useRef(new Set<string>());
-  const [fontLoading, setFontLoading] = useState(false);
   const [fontWeight, setFontWeight] = useState(700);
   const [letterSpacing, setLetterSpacing] = useState(0);
 
@@ -212,19 +204,6 @@ export default function OgImageGenerator() {
   const W = sizePreset.w; const H = sizePreset.h;
   const palette = PALETTES.find((p) => p.id === paletteId) ?? PALETTES[0];
   const showEmojiWarning = hasEmoji(title) || hasEmoji(subtitle);
-
-  useEffect(() => {
-    const loadFont = async (id: string) => {
-      if (loadedFonts.current.has(id)) return;
-      const url = FONT_URLS[id]; if (!url) return;
-      const link = document.createElement("link"); link.rel = "stylesheet"; link.href = url;
-      document.head.appendChild(link);
-      try { await document.fonts.load("700 1em " + FONT_OPTIONS.find(f => f.id === id)?.family); } catch {}
-      loadedFonts.current.add(id);
-    };
-    setFontLoading(true);
-    loadFont(fontId).then(() => setFontLoading(false));
-  }, [fontId]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -273,7 +252,8 @@ export default function OgImageGenerator() {
 
   const render = useCallback(() => {
     const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext("2d"); if (!ctx) return;
-    const ff = FONT_OPTIONS.find(f => f.id === fontId)?.family ?? "'Inter', sans-serif";
+    const fontVar = FONT_OPTIONS.find(f => f.id === fontId)?.variable ?? "--font-inter";
+    const ff = getComputedStyle(document.documentElement).getPropertyValue(fontVar).trim() || "Inter, sans-serif";
     drawOgImage(ctx, W, H, title, subtitle, palette, ff, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow, fontWeight, letterSpacing);
     setShimmer(false);
   }, [W, H, title, subtitle, palette, fontId, logoImg, bgImg, layout, overlay, decorIcon, proceduralSeed, textShadow, fontWeight, letterSpacing]);
@@ -463,7 +443,7 @@ export default function OgImageGenerator() {
             <div className="mt-1 flex flex-wrap gap-1.5">
               {FONT_OPTIONS.map((f) => (
                 <button key={f.id} onClick={() => setFontId(f.id)}
-                  className={`pressable rounded-md border px-2.5 py-1.5 text-xs ${fontId === f.id ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground"} ${fontLoading && fontId === f.id ? "animate-pulse" : ""}`}
+                  className={`pressable rounded-md border px-2.5 py-1.5 text-xs ${fontId === f.id ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground"}`}
                 >{f.name}</button>
               ))}
             </div>
