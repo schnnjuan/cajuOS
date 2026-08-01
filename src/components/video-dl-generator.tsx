@@ -86,6 +86,7 @@ export default function VideoDlGenerator() {
   });
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
+  const [copied, setCopied] = useState("");
   const [tab, setTab] = useState<"extract" | "api">("extract");
 
   const saveHistory = useCallback((entry: HistoryEntry) => {
@@ -212,9 +213,11 @@ export default function VideoDlGenerator() {
     }
   }, [selected, result, quality, dlUrl]);
 
-  const copy = useCallback(async (text: string) => {
+  const copy = useCallback(async (text: string, key: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      setCopied(key);
+      setTimeout(() => setCopied(""), 1500);
     } catch {
       // clipboard indisponível
     }
@@ -249,8 +252,7 @@ export default function VideoDlGenerator() {
         <button
           type="button"
           onClick={() => setTab("api")}
-          disabled={status !== "done"}
-          className={`pressable pb-2 ${tab === "api" && status === "done" ? "border-b-2 border-foreground font-medium text-foreground" : "text-muted"} disabled:cursor-not-allowed`}
+          className={`pressable pb-2 ${tab === "api" ? "border-b-2 border-foreground font-medium text-foreground" : "text-muted"}`}
         >
           API
         </button>
@@ -343,17 +345,17 @@ export default function VideoDlGenerator() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => copy(selected.url)}
+                  onClick={() => copy(selected.url, "source")}
                   className="pressable rounded-md border border-border px-2.5 py-1.5 text-xs hover:border-foreground"
                 >
-                  Copiar link da fonte
+                  {copied === "source" ? "Copiado ✓" : "Copiar link da fonte"}
                 </button>
                 <button
                   type="button"
-                  onClick={() => copy(commandCurl())}
+                  onClick={() => copy(commandCurl(), "curl")}
                   className="pressable rounded-md border border-border px-2.5 py-1.5 text-xs hover:border-foreground"
                 >
-                  Copiar comando curl
+                  {copied === "curl" ? "Copiado ✓" : "Copiar comando curl"}
                 </button>
               </div>
 
@@ -394,42 +396,71 @@ export default function VideoDlGenerator() {
         </div>
       )}
 
-      {tab === "api" && result && selected && (
+      {tab === "api" && (
         <div className="flex flex-col gap-3">
-          <p className="text-xs text-muted">
-            Comandos prontos pro terminal — úteis pra arquivos grandes ou automação. O curl usa
-            User-Agent + Referer, então passa onde o curl puro toma 403.
-          </p>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-foreground">curl</span>
+          {result && selected ? (
+            <>
+              <p className="text-xs text-muted">
+                Comandos prontos pro terminal — úteis pra arquivos grandes ou automação. O curl usa
+                User-Agent + Referer, então passa onde o curl puro toma 403.
+              </p>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-foreground">curl</span>
+                  <button
+                    type="button"
+                    onClick={() => copy(commandCurl(), "api-curl")}
+                    className="pressable rounded-md border border-border px-2 py-1 text-[10px] text-muted hover:border-foreground"
+                  >
+                    {copied === "api-curl" ? "Copiado ✓" : "Copiar"}
+                  </button>
+                </div>
+                <pre className="overflow-x-auto rounded-md border border-border bg-background px-3 py-2 text-[10px] leading-relaxed text-muted">
+                  {commandCurl()}
+                </pre>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-foreground">aria2c</span>
+                  <button
+                    type="button"
+                    onClick={() => copy(commandAria2(), "api-aria2")}
+                    className="pressable rounded-md border border-border px-2 py-1 text-[10px] text-muted hover:border-foreground"
+                  >
+                    {copied === "api-aria2" ? "Copiado ✓" : "Copiar"}
+                  </button>
+                </div>
+                <pre className="overflow-x-auto rounded-md border border-border bg-background px-3 py-2 text-[10px] leading-relaxed text-muted">
+                  {commandAria2()}
+                </pre>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-muted">
+                A tool é um worker Cloudflare público em{" "}
+                <code className="rounded bg-muted px-1 py-0.5 text-[10px]">video-dl.cajuos.dev</code>.
+                Dá pra usar direto do terminal:
+              </p>
+              <pre className="overflow-x-auto rounded-md border border-border bg-background px-3 py-2 text-[10px] leading-relaxed text-muted">
+{`# acha a fonte e lista qualidades
+curl 'https://video-dl.cajuos.dev/extract?page=URL'
+
+# baixa a melhor qualidade (ou a escolhida com &q=1080p)
+curl -L 'https://video-dl.cajuos.dev/go?page=URL' -o video.mp4`}
+              </pre>
+              <p className="text-xs text-muted">
+                Extraia uma fonte pra ver o comando exato do vídeo pronto pra copiar.
+              </p>
               <button
                 type="button"
-                onClick={() => copy(commandCurl())}
-                className="pressable rounded-md border border-border px-2 py-1 text-[10px] text-muted hover:border-foreground"
+                onClick={() => setTab("extract")}
+                className="pressable rounded-md border border-border px-2.5 py-1.5 text-xs hover:border-foreground"
               >
-                Copiar
+                Ir pra Extrair
               </button>
-            </div>
-            <pre className="overflow-x-auto rounded-md border border-border bg-background px-3 py-2 text-[10px] leading-relaxed text-muted">
-              {commandCurl()}
-            </pre>
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-foreground">aria2c</span>
-              <button
-                type="button"
-                onClick={() => copy(commandAria2())}
-                className="pressable rounded-md border border-border px-2 py-1 text-[10px] text-muted hover:border-foreground"
-              >
-                Copiar
-              </button>
-            </div>
-            <pre className="overflow-x-auto rounded-md border border-border bg-background px-3 py-2 text-[10px] leading-relaxed text-muted">
-              {commandAria2()}
-            </pre>
-          </div>
+            </>
+          )}
         </div>
       )}
     </div>
