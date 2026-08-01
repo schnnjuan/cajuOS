@@ -11,6 +11,14 @@ const icons: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
       <rect x="17" y="17" width="4" height="1.5" rx="0.75" opacity="0.4" />
     </svg>
   ),
+  "video-dl": (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+      <rect x="2" y="4" width="20" height="3" rx="1" opacity="0.15" />
+    </svg>
+  ),
 };
 
 export function ToolIcon({

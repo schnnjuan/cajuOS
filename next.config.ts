@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://images.unsplash.com",
               "font-src 'self'",
-              "connect-src 'self' https://api.github.com https://api.umami.is",
+              "connect-src 'self' https://api.github.com https://api.umami.is https://video-dl.cajuos.dev http://localhost:8787",
               "frame-src 'none'",
               "object-src 'none'",
               "base-uri 'self'",

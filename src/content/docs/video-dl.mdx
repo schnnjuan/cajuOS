@@ -1,0 +1,77 @@
+---
+title: Video Downloader
+date: 2026-08-01
+description: Baixe o vídeo pela fonte exata a partir do link. Detecta mp4 e HLS, com comando curl pronto.
+tool: video-dl
+---
+
+Baixa o vídeo pela fonte exata a partir do link da página. Sem extensão, sem app. Acha arquivos mp4/webm/mov no HTML e streams HLS (m3u8).
+
+## Como usar
+
+<Command>cajuos.dev/tools/video-dl</Command>
+
+1. Acesse a tool
+2. Cole a URL da página que tem o vídeo
+3. Clique em **Encontrar fonte**
+4. Escolha a qualidade
+5. Clique em **Baixar**
+
+Links recentes ficam salvos no navegador (localStorage) pra reusar depois.
+
+## Tipos de fonte
+
+- **MP4 direto**: a página expõe um arquivo de vídeo no HTML (`src` de `<video>` ou `<source>`, ou dentro de JSON). O download pega o arquivo original, sem re-encode.
+- **HLS (m3u8)**: a página usa streaming adaptativo. O worker lê o manifest, escolhe a variante e concatena os segmentos num `.ts` lossless, na velocidade máxima da rede.
+
+<Callout type="tip">
+  `.ts` é o formato nativo do HLS — VLC, mpv e ffplay reproduzem normal. Editores grandes (Premiere, Resolve) não abrem direto; nesse caso prefira página com mp4.
+</Callout>
+
+## Qualidades
+
+Quando a página oferece várias versões, o seletor mostra todas com tamanho estimado. Ordenação decrescente: 2160p → 1440p → 1080p → 720p → 480p → 360p.
+
+## API
+
+A aba API da tool gera comandos prontos pra terminal. O curl puro toma 403 porque vai sem User-Agent e sem Referer.
+
+```bash
+# o que o botão Baixar faz, no terminal
+curl -L -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36' \
+  -e 'https://site.com/pagina' \
+  -o 'video_1080p.mp4' \
+  'https://cdn.site.com/video_1080p.mp4'
+
+# versão aria2c (16 conexões, retomável)
+aria2c -x16 -s16 --referer='https://site.com/pagina' -o 'video_1080p.mp4' 'https://cdn.site.com/video_1080p.mp4'
+```
+
+Para HLS, o comando usa o endpoint `/go` do worker, que resolve a variante e redireciona pro stream concatenado:
+
+```bash
+curl -L 'https://video-dl.cajuos.dev/go?page=https://site.com/pagina&q=1080p' -o 'video_1080p.ts'
+```
+
+## Limites
+
+- Só HTTP/HTTPS públicos — endereços locais e IPs privados são rejeitados
+- HLS: só vídeo sob demanda (VOD). Stream ao vivo retorna erro
+- HLS cifrado (AES-128) ainda não é suportado
+- Site que exige login ou cookies de sessão pode bloquear a leitura
+- O download respeita o tamanho do arquivo — o worker não limita banda
+
+## Futuro
+
+- Batch/playlist (várias páginas de uma vez)
+- HLS cifrado
+- Stream ao vivo
+- Pass-through de cookies
+
+## Stack
+
+Cloudflare Worker (`video-dl.cajuos.dev`) em TypeScript — extração, proxy de download e concatenação HLS. Componente React client-side no Next.js.
+
+## Código
+
+Worker em `tools/video-dl-worker/` no repositório. Deploy via `wrangler deploy`. Open source no [GitHub](https://github.com/schnnjuan/cajuOS).

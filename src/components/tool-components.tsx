@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 // Adicione aqui cada nova tool interativa.
 const toolComponents: Record<string, ComponentType> = {
   "og-image": dynamic(() => import("./og-image-generator")),
+  "video-dl": dynamic(() => import("./video-dl-generator")),
 };
 
 export function getToolComponent(slug: string): ComponentType | null {

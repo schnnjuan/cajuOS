@@ -1,0 +1,69 @@
+---
+title: Como baixar o vídeo pela fonte exata em 1 comando
+date: 2026-08-01
+description: O mp4 escondido no player, o 403 do curl e a concatenação HLS. Como a Tool #2 do CajuOS baixa o vídeo pela fonte exata.
+tool: video-dl
+---
+
+## O problema
+
+Você acha um vídeo numa página, o player toca, mas não tem botão de download. O arquivo está lá — num `<video>`, num `<source>`, dentro de um JSON — mas pegar ele na mão dá trabalho:
+
+- Abrir DevTools e caçar a tag certa
+- Copiar a URL, que às vezes é relativa
+- Baixar com `curl` e tomar **403** porque o site bloqueia requisição sem User-Agent e Referer
+
+## A solução
+
+<Command>cajuos.dev/tools/video-dl</Command>
+
+O **Video Downloader** faz isso. Cola o link da página:
+
+1. Lê o HTML com User-Agent de navegador
+2. Acha todos os arquivos de vídeo (mp4, webm, m4v, mov)
+3. Agrupa por qualidade e estima o tamanho
+4. Baixa o original, sem re-encode
+
+## Por que HLS é diferente
+
+Site com streaming adaptativo não serve um mp4 fixo. Ele quebra o vídeo em dezenas de pedaços e manda uma lista (m3u8) dizendo qual pedaço baixar e em que ordem.
+
+Juntar os pedaços dá pra fazer de dois jeitos:
+
+- **No navegador, em tempo real**: reproduz o vídeo e grava a tela. Um vídeo de 30 minutos custa 30 minutos e re-encodeia.
+- **No worker, em velocidade máxima**: o servidor lê a lista, baixa os pedaços em sequência e entrega um stream único.
+
+O CajuOS usa o segundo. O resultado é um `.ts` — o formato nativo do HLS, sem perda nenhuma. VLC e mpv tocam direto.
+
+## Pra usar no terminal
+
+Depois de extrair a fonte, a aba **API** gera o comando que o navegador executaria:
+
+```bash
+curl -L -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36' \
+  -e 'https://site.com/pagina' \
+  -o 'video_1080p.mp4' \
+  'https://cdn.site.com/video_1080p.mp4'
+```
+
+O curl puro toma 403 porque vai sem User-Agent e sem Referer. O comando gerado carrega os dois — passa onde o curl nu não passa.
+
+Para HLS, um comando só, via endpoint `/go` do worker:
+
+```bash
+curl -L 'https://video-dl.cajuos.dev/go?page=https://site.com/pagina&q=1080p' -o 'video_1080p.ts'
+```
+
+Dá pra jogar num script ou num for-loop com uma lista de páginas. A API existe porque o download de vídeo sempre foi problema de terminal — a UI só mostra o caminho.
+
+## Limitações
+
+- Site que exige login pode bloquear a leitura
+- HLS cifrado (AES-128) e stream ao vivo retornam erro — ainda não suportados
+- `.ts` não abre em editores grandes (Premiere, Resolve) — pra edição, prefira página com mp4
+
+## Fechando
+
+Essa é a **Tool #2** do CajuOS. Toda semana sai mais uma ferramenta. Se tiver ideia pra próxima, abre uma issue no GitHub.
+
+O código do worker tá no [GitHub](https://github.com/schnnjuan/cajuOS), em `tools/video-dl-worker/`.

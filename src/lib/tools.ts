@@ -18,6 +18,14 @@ export const tools: Tool[] = [
     hasApi: false,
     launchedAt: "2026-07-24",
   },
+  {
+    slug: "video-dl",
+    name: "Video Downloader",
+    tagline: "Baixa o vídeo pela fonte exata a partir do link. Detecta mp4 e HLS, gera comando curl pronto.",
+    icon: "🎬",
+    hasApi: true,
+    launchedAt: "2026-08-01",
+  },
 ];
 
 // Data de início simbólica do experimento (semana 1)
