@@ -5,18 +5,21 @@ import { DeleteButton } from "@/components/admin/delete-button";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminBlogPage() {
-  const items = await listContentItems("blog");
+export default async function AdminDocsPage() {
+  const items = await listContentItems("docs");
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Blog</h1>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Docs</h1>
+          <p className="mt-1 text-sm text-muted">Documentação de uso das tools.</p>
+        </div>
         <Link
-          href="/admin/blog/new"
+          href="/admin/docs/new"
           className="shrink-0 rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background transition-[color,transform] duration-150 ease-out hover:opacity-90 active:scale-95"
         >
-          Novo post
+          Nova doc
         </Link>
       </div>
 
@@ -27,7 +30,7 @@ export default async function AdminBlogPage() {
             <li key={p.slug} className="flex items-center justify-between py-4">
               <div>
                 <Link
-                  href={`/admin/blog/${p.slug}/edit`}
+                  href={`/admin/docs/${p.slug}/edit`}
                   className="font-medium transition-colors duration-150 ease-out hover:text-muted"
                 >
                   {p.title}
@@ -49,20 +52,20 @@ export default async function AdminBlogPage() {
               <div className="flex shrink-0 items-center gap-4">
                 {!p.draft && (
                   <Link
-                    href={`/blog/${p.slug}`}
+                    href={`/docs/${p.slug}`}
                     target="_blank"
                     className="text-sm text-muted transition-colors duration-150 ease-out hover:text-foreground"
                   >
                     Abrir no site
                   </Link>
                 )}
-                <DeleteButton type="blog" slug={p.slug} draft={p.draft} />
+                <DeleteButton type="docs" slug={p.slug} draft={p.draft} />
               </div>
             </li>
           );
         })}
         {items.length === 0 && (
-          <li className="py-10 text-center text-muted">Nenhum post ainda.</li>
+          <li className="py-10 text-center text-muted">Nenhuma doc ainda.</li>
         )}
       </ul>
     </div>

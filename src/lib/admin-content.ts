@@ -56,13 +56,72 @@ function isDraft(type: string, slug: string): boolean {
 
 /* ── GitHub API helpers ── */
 
-async function saveViaGithub(relativePath: string, content: string) {
+const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents`;
+
+function githubHeaders(): Record<string, string> {
   const token = process.env.GITHUB_TOKEN!;
-  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${relativePath}`;
-  const headers: Record<string, string> = {
+  return {
     Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github.v3+json",
   };
+}
+
+async function githubList(dir: string): Promise<
+  { name: string; sha: string }[]
+> {
+  const res = await fetch(`${GITHUB_API}/src/content/${dir}`, {
+    headers: githubHeaders(),
+  });
+  if (res.status === 404) return [];
+  if (!res.ok) {
+    throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
+  }
+  const data = (await res.json()) as { name: string; sha: string }[];
+  return data.filter((f) => f.name.endsWith(".mdx"));
+}
+
+async function githubRead(path: string): Promise<string | null> {
+  const res = await fetch(`${GITHUB_API}/${path}`, {
+    headers: githubHeaders(),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
+  }
+  const data = (await res.json()) as { content: string };
+  return Buffer.from(data.content, "base64").toString("utf8");
+}
+
+async function githubDelete(relativePath: string): Promise<boolean> {
+  const url = `${GITHUB_API}/${relativePath}`;
+  const res = await fetch(url, { headers: githubHeaders() });
+  if (res.status === 404) return false;
+  if (!res.ok) {
+    throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
+  }
+  const data = (await res.json()) as { sha: string };
+
+  const del = await fetch(url, {
+    method: "DELETE",
+    headers: { ...githubHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: `chore: delete ${relativePath}`,
+      sha: data.sha,
+    }),
+  });
+  if (!del.ok) {
+    throw new Error(`GitHub API ${del.status}: ${await del.text()}`);
+  }
+  return true;
+}
+
+/* Vercel serverless não carrega src/content via fs em runtime:
+   lista/lê via GitHub API em produção, fs em dev. */
+const githubMode = () => process.env.NODE_ENV === "production";
+
+async function saveViaGithub(relativePath: string, content: string) {
+  const url = `${GITHUB_API}/${relativePath}`;
+  const headers = githubHeaders();
 
   // Get existing SHA if file exists
   let sha: string | undefined;
@@ -96,33 +155,62 @@ async function saveViaGithub(relativePath: string, content: string) {
 
 /* ── public API ── */
 
-export function listContentItems(type: string): ContentItem[] {
+export async function listContentItems(type: string): Promise<ContentItem[]> {
   const items: ContentItem[] = [];
 
-  for (const dir of [type, `_drafts/${type}`]) {
-    const full = path.join(CONTENT_DIR, dir);
-    if (!fs.existsSync(full)) continue;
-    for (const file of fs.readdirSync(full)) {
-      if (!file.endsWith(".mdx")) continue;
-      const raw = fs.readFileSync(path.join(full, file), "utf8");
-      const { frontmatter } = parseFrontmatter(raw);
-      const slug = file.replace(/\.mdx$/, "");
-      items.push({
-        slug,
-        title: frontmatter.title || slug,
-        description: frontmatter.description,
-        date: frontmatter.date || "",
-        draft: dir.startsWith("_drafts"),
-        tool: frontmatter.tool,
-      });
+  if (githubMode()) {
+    for (const dir of [type, `_drafts/${type}`]) {
+      const files = await githubList(dir);
+      for (const file of files) {
+        const raw = await githubRead(`src/content/${dir}/${file.name}`);
+        if (!raw) continue;
+        const { frontmatter } = parseFrontmatter(raw);
+        items.push({
+          slug: file.name.replace(/\.mdx$/, ""),
+          title: frontmatter.title || file.name.replace(/\.mdx$/, ""),
+          description: frontmatter.description,
+          date: frontmatter.date || "",
+          draft: dir.startsWith("_drafts"),
+          tool: frontmatter.tool,
+        });
+      }
+    }
+  } else {
+    for (const dir of [type, `_drafts/${type}`]) {
+      const full = path.join(CONTENT_DIR, dir);
+      if (!fs.existsSync(full)) continue;
+      for (const file of fs.readdirSync(full)) {
+        if (!file.endsWith(".mdx")) continue;
+        const raw = fs.readFileSync(path.join(full, file), "utf8");
+        const { frontmatter } = parseFrontmatter(raw);
+        const slug = file.replace(/\.mdx$/, "");
+        items.push({
+          slug,
+          title: frontmatter.title || slug,
+          description: frontmatter.description,
+          date: frontmatter.date || "",
+          draft: dir.startsWith("_drafts"),
+          tool: frontmatter.tool,
+        });
+      }
     }
   }
 
   return items.sort((a, b) => b.date.localeCompare(a.date));
 }
 
-export function readContentItem(type: string, slug: string): ContentDetail | null {
-  const raw = readFile(type, slug);
+export async function readContentItem(
+  type: string,
+  slug: string,
+): Promise<ContentDetail | null> {
+  let raw: string | null = null;
+
+  if (githubMode()) {
+    raw = await githubRead(`src/content/${type}/${slug}.mdx`);
+    if (!raw) raw = await githubRead(`src/content/_drafts/${type}/${slug}.mdx`);
+  } else {
+    raw = readFile(type, slug);
+  }
   if (!raw) return null;
 
   const { frontmatter, body } = parseFrontmatter(raw);
@@ -132,7 +220,9 @@ export function readContentItem(type: string, slug: string): ContentDetail | nul
     title: frontmatter.title || slug,
     description: frontmatter.description,
     date: frontmatter.date || "",
-    draft: isDraft(type, slug),
+    draft: githubMode()
+      ? (await githubRead(`src/content/_drafts/${type}/${slug}.mdx`)) !== null
+      : isDraft(type, slug),
     tool: frontmatter.tool,
     body,
   };
@@ -176,7 +266,7 @@ export async function saveContent(opts: {
     const oldDir = opts.draft ? `_drafts/${opts.type}` : opts.type;
     const oldRel = `src/content/${oldDir}/${opts.originalSlug}.mdx`;
     if (process.env.GITHUB_TOKEN) {
-      // GitHub delete requires SHA — skip for MVP
+      await githubDelete(oldRel);
     } else {
       const oldAbs = path.join(process.cwd(), oldRel);
       if (fs.existsSync(oldAbs)) fs.unlinkSync(oldAbs);
@@ -184,4 +274,24 @@ export async function saveContent(opts: {
   }
 
   return { ok: true, slug: opts.slug };
+}
+
+export async function deleteContent(
+  type: string,
+  slug: string,
+  draft: boolean,
+): Promise<{ ok: boolean; notFound?: boolean }> {
+  const dir = draft ? `_drafts/${type}` : type;
+  const relativePath = `src/content/${dir}/${slug}.mdx`;
+
+  if (process.env.GITHUB_TOKEN) {
+    const deleted = await githubDelete(relativePath);
+    if (!deleted) return { ok: false, notFound: true };
+  } else {
+    const absPath = path.join(process.cwd(), relativePath);
+    if (!fs.existsSync(absPath)) return { ok: false, notFound: true };
+    fs.unlinkSync(absPath);
+  }
+
+  return { ok: true };
 }

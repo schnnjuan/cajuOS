@@ -18,7 +18,7 @@ function slugify(text: string): string {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-export default function EditPostPage({
+export default function EditDocPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -26,7 +26,7 @@ export default function EditPostPage({
   const { slug } = use(params);
   const router = useRouter();
   const { data, error: loadErr, isLoading } = useSWR(
-    `/api/admin/content?type=blog&slug=${slug}`,
+    `/api/admin/content?type=docs&slug=${slug}`,
     fetcher,
   );
 
@@ -71,7 +71,7 @@ export default function EditPostPage({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "blog",
+          type: "docs",
           slug: currentSlug || slugify(title),
           originalSlug: currentSlug !== slug ? slug : undefined,
           title: title.trim(),
@@ -90,7 +90,7 @@ export default function EditPostPage({
 
       setSuccess(draft ? "Rascunho salvo ✓" : "Publicado ✓");
       setTimeout(() => {
-        router.push("/admin/blog");
+        router.push("/admin/docs");
         router.refresh();
       }, 900);
     } catch (e) {
@@ -110,8 +110,8 @@ export default function EditPostPage({
   if (loadErr || !data) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <p className="text-red-500">Erro ao carregar post.</p>
-        <a href="/admin/blog" className="mt-4 block text-sm text-muted underline">
+        <p className="text-red-500">Erro ao carregar doc.</p>
+        <a href="/admin/docs" className="mt-4 block text-sm text-muted underline">
           ← Voltar
         </a>
       </div>
@@ -120,7 +120,7 @@ export default function EditPostPage({
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold tracking-tight">Editar post</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Editar doc</h1>
 
       <form
         onSubmit={(e: FormEvent) => {

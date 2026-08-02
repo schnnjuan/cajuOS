@@ -4,6 +4,7 @@ import { use, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { tools } from "@/lib/tools";
+import { MarkdownPreview } from "@/components/admin/markdown-preview";
 
 function slugify(text: string): string {
   return text
@@ -36,6 +37,7 @@ export default function EditChangelogPage({
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -83,8 +85,11 @@ export default function EditChangelogPage({
         throw new Error(err.error ?? "Erro ao salvar");
       }
 
-      router.push("/admin/changelog");
-      router.refresh();
+      setSuccess(draft ? "Rascunho salvo ✓" : "Publicado ✓");
+      setTimeout(() => {
+        router.push("/admin/changelog");
+        router.refresh();
+      }, 900);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao salvar");
       setSaving(false);
@@ -181,7 +186,10 @@ export default function EditChangelogPage({
           />
         </div>
 
+        <MarkdownPreview body={body} />
+
         {error && <p className="text-sm text-red-500">{error}</p>}
+        {success && <p className="text-sm text-green-600">{success}</p>}
 
         <div className="flex gap-3">
           <button

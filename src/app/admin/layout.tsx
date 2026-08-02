@@ -7,6 +7,7 @@ const links = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/blog", label: "Blog" },
   { href: "/admin/changelog", label: "Changelog" },
+  { href: "/admin/docs", label: "Docs" },
 ];
 
 export default function AdminLayout({

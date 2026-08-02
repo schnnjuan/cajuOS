@@ -1,9 +1,12 @@
 import { listContentItems } from "@/lib/admin-content";
 import { toolBySlug } from "@/lib/tools";
 import Link from "next/link";
+import { DeleteButton } from "@/components/admin/delete-button";
 
-export default function AdminChangelogPage() {
-  const items = listContentItems("changelog");
+export const dynamic = "force-dynamic";
+
+export default async function AdminChangelogPage() {
+  const items = await listContentItems("changelog");
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
@@ -47,6 +50,18 @@ export default function AdminChangelogPage() {
                     </span>
                   )}
                 </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-4">
+                {!p.draft && (
+                  <Link
+                    href={`/changelog${p.tool ? `?tool=${p.tool}` : ""}`}
+                    target="_blank"
+                    className="text-sm text-muted transition-colors duration-150 ease-out hover:text-foreground"
+                  >
+                    Abrir no site
+                  </Link>
+                )}
+                <DeleteButton type="changelog" slug={p.slug} draft={p.draft} />
               </div>
             </li>
           );

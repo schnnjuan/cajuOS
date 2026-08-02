@@ -1,8 +1,7 @@
 "use client";
 
-import { use, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import useSWR from "swr";
 import { tools } from "@/lib/tools";
 import { MarkdownPreview } from "@/components/admin/markdown-preview";
 
@@ -16,46 +15,26 @@ function slugify(text: string): string {
     .slice(0, 80);
 }
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+function today(): string {
+  return new Date().toISOString().split("T")[0];
+}
 
-export default function EditPostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = use(params);
+export default function NewDocPage() {
   const router = useRouter();
-  const { data, error: loadErr, isLoading } = useSWR(
-    `/api/admin/content?type=blog&slug=${slug}`,
-    fetcher,
-  );
-
+  const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
-  const [currentSlug, setCurrentSlug] = useState(slug);
   const [description, setDescription] = useState("");
   const [toolSlug, setToolSlug] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(today());
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-
-  // Fill form when data arrives
-  if (data && !loaded) {
-    setTitle(data.title ?? slug);
-    setCurrentSlug(data.slug ?? slug);
-    setDescription(data.description ?? "");
-    setToolSlug(data.tool ?? "");
-    setDate(data.date ?? "");
-    setBody(data.body ?? "");
-    setLoaded(true);
-  }
 
   function handleTitleChange(v: string) {
     setTitle(v);
-    if (!slugEdited) setCurrentSlug(slugify(v));
+    if (!slugEdited) setSlug(slugify(v));
   }
 
   async function save(draft: boolean) {
@@ -71,9 +50,8 @@ export default function EditPostPage({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "blog",
-          slug: currentSlug || slugify(title),
-          originalSlug: currentSlug !== slug ? slug : undefined,
+          type: "docs",
+          slug: slug || slugify(title),
           title: title.trim(),
           description: description.trim() || undefined,
           date,
@@ -90,7 +68,7 @@ export default function EditPostPage({
 
       setSuccess(draft ? "Rascunho salvo ✓" : "Publicado ✓");
       setTimeout(() => {
-        router.push("/admin/blog");
+        router.push("/admin/docs");
         router.refresh();
       }, 900);
     } catch (e) {
@@ -99,28 +77,9 @@ export default function EditPostPage({
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="mx-auto max-w-3xl px-6 py-12">
-        <p className="text-muted">Carregando…</p>
-      </div>
-    );
-  }
-
-  if (loadErr || !data) {
-    return (
-      <div className="mx-auto max-w-3xl px-6 py-12">
-        <p className="text-red-500">Erro ao carregar post.</p>
-        <a href="/admin/blog" className="mt-4 block text-sm text-muted underline">
-          ← Voltar
-        </a>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold tracking-tight">Editar post</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Nova doc</h1>
 
       <form
         onSubmit={(e: FormEvent) => {
@@ -142,12 +101,12 @@ export default function EditPostPage({
         <div>
           <label className="mb-1 block text-sm text-muted">Slug</label>
           <input
-            value={currentSlug}
+            value={slug}
             onChange={(e) => {
-              setCurrentSlug(e.target.value);
+              setSlug(e.target.value);
               setSlugEdited(true);
             }}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm text-muted outline-none focus:border-foreground"
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono text-muted outline-none focus:border-foreground"
           />
         </div>
 
