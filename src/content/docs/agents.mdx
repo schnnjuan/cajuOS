@@ -1,0 +1,55 @@
+---
+title: Mídia pra Agents
+date: 2026-08-03
+description: API e MCP remoto que entregam áudio e vídeo de qualquer página pra agents. Docs, endpoints e limites.
+tool: agents
+---
+
+API + MCP remoto que transforma qualquer página com vídeo em dados LLM-ready. Sem yt-dlp, sem ffmpeg, sem ferramenta local.
+
+<Command>agents.cajuos.dev</Command>
+
+O site da tool tem docs completos e snippets de config pra cada cliente MCP. Resumo aqui:
+
+## Endpoints
+
+```bash
+# metadados + lista de mídias
+curl 'https://media.cajuos.dev/media?url=URL'
+
+# áudio AAC pronto pra transcrever
+curl 'https://media.cajuos.dev/media/audio?url=URL&name=audio' -o audio.aac
+
+# vídeo original
+curl 'https://media.cajuos.dev/media/video?url=URL&quality=720p' -o video.mp4
+```
+
+## MCP
+
+Server remoto em `https://media.cajuos.dev/mcp`, com 3 tools:
+
+- `extract_media(url)`: metadados
+- `download_audio(url, name?)`: URL do áudio AAC
+- `download_video(url, quality?, name?)`: URL do vídeo
+
+```bash
+claude mcp add --transport http caju-agents https://media.cajuos.dev/mcp
+```
+
+## Formato do áudio
+
+- HLS TS com áudio AAC: demux no worker, saída `audio/aac` (ADTS), sem re-encode
+- MP3 direto: proxy com Range
+- HLS fMP4: ainda sem extração de áudio (erro `audio-unavailable`)
+
+## Limites
+
+- Só HTTP/HTTPS públicos. IPs privados e localhost rejeitados
+- HLS VOD só. Stream ao vivo retorna erro
+- **Plano free**: HLS até ~46 segmentos (~5min). Acima, `hls-too-long`. MP4/MP3 sem teto
+- Rate limit por IP: 30/min em `/media`, 10/min em áudio/vídeo, 60/min no MCP
+- Erros em JSON: `no-media`, `live-stream`, `hls-too-long`, `audio-unavailable`, `rate-limited`, `manifest-failed`
+
+## Stack
+
+Cloudflare Worker (`media.cajuos.dev`) em TypeScript: extração (mesmo motor do video-dl), demux TS→ADTS, proxy, cache KV e rate limit. SDK MCP `@modelcontextprotocol/sdk` com transporte streamable HTTP stateless. Site Next.js dark-first em `agents.cajuos.dev`. Repo público [CajuOS/agents](https://github.com/CajuOS/agents) (MIT).

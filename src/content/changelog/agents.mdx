@@ -1,0 +1,29 @@
+---
+title: Mídia pra Agents
+date: 2026-08-03
+description: Tool #3 do CajuOS. API + MCP remoto que extraem áudio e vídeo de qualquer página, sem yt-dlp e sem ffmpeg.
+tool: agents
+---
+
+A terceira tool do CajuOS chegou. Ela não baixa vídeo pra você usar: ela entrega **mídia pra agent usar**. Uma URL com vídeo entra, e o agent recebe:
+
+- **Metadados** em JSON (lista de mídias da página)
+- **Áudio AAC pronto** pra transcrição, extraído do HLS sem re-encode
+- **Vídeo original** via proxy
+
+**O que vem incluso:**
+
+- **API pública**: `/media`, `/media/audio` e `/media/video` em `media.cajuos.dev`
+- **MCP remoto** (streamable HTTP): `extract_media`, `download_audio`, `download_video` funcionam direto no Claude Code, Cursor e opencode, sem install
+- **Áudio sem re-encode**: demux TS → AAC ADTS no worker; frames saem dos segmentos direto pro stream
+- **MP3 direto** com proxy e Range
+- **Extração genérica**: mesmo motor do video-dl (mp4/m4v/webm/mkv + HLS m3u8)
+- **SSRF guard, cache KV, rate limit e contadores de uso** desde o v1
+
+**Limitações (plano free, honestas):**
+
+- HLS de até ~46 segmentos (~5min); maior retorna `hls-too-long`. MP4/MP3 diretos sem teto
+- HLS ao vivo não é suportado
+- fMP4 ainda sem extração de áudio (só TS)
+
+**Onde:** [agents.cajuos.dev](https://agents.cajuos.dev) · repo [CajuOS/agents](https://github.com/CajuOS/agents) (público, MIT)

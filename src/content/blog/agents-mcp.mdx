@@ -1,0 +1,68 @@
+---
+title: Transcreva qualquer vídeo sem yt-dlp: áudio direto pro agent
+date: 2026-08-03
+description: URL com vídeo entra, áudio AAC pronto pra transcrição sai. API pública + MCP remoto, sem yt-dlp, sem ffmpeg, sem setup local.
+tool: agents
+---
+
+## O problema
+
+Você quer que um agent transcreva ou pesquise dentro de um vídeo. Aí começa a saga:
+
+- Instalar yt-dlp e mantê-lo atualizado
+- Instalar ffmpeg
+- Descobrir qual formato tem áudio extraível
+- Baixar 200MB de vídeo pra extrair 5MB de áudio
+- Repetir tudo em outra máquina
+
+Serviços fechados de transcrição pedem a URL do YouTube, não funcionam com a página que você tem.
+
+## A tool
+
+A Tool #3 do CajuOS é uma API pública + MCP remoto que transforma **qualquer página com vídeo em dados LLM-ready**:
+
+- **Metadados**: lista de mídias da página, em JSON
+- **Áudio pronto**: AAC extraído do HLS, sem re-encode, direto pra transcrição
+- **Vídeo original**: proxy do arquivo ou do stream concatenado
+
+O agent fala com ela nativamente via MCP. Nada de ferramenta local.
+
+## Como funciona
+
+Mesmo motor de extração do video-dl (a Tool #2): procura mp4/m4v/webm/mkv no HTML e manifestos HLS. A novidade é o caminho do áudio:
+
+- HLS com áudio em TS: o worker **demuxa** o stream e entrega AAC ADTS puro. Sem re-encode, sem ffmpeg: os frames de áudio saem direto dos segmentos
+- MP3 direto: proxy com Range
+- O resultado toca em qualquer player e qualquer ferramenta de transcrição lê
+
+## Exemplo
+
+```bash
+# metadados
+curl 'https://media.cajuos.dev/media?url=https://exemplo.com/video'
+
+# áudio pronto pra transcrever
+curl 'https://media.cajuos.dev/media/audio?url=https://exemplo.com/video' -o audio.aac
+```
+
+No agent, em vez de curl, é só configurar o MCP:
+
+```json
+// claude code
+claude mcp add --transport http caju-agents https://media.cajuos.dev/mcp
+```
+
+E pedir: *"transcreve o áudio desta página e me dá o resumo"*.
+
+## Limitações honestas
+
+- **Plano free**: 50 subrequests por invocação no Cloudflare, então HLS de até ~46 segmentos (~5min) funciona; maior retorna erro claro (`hls-too-long`). MP4/MP3 diretos não têm esse teto
+- HLS ao vivo não é suportado (VOD só)
+- fMP4 (streaming moderno sem TS) ainda não tem extração de áudio
+- Rate limit por IP: 30/min em `/media`, 10/min em áudio e vídeo
+- Site que exige login pode bloquear a leitura
+
+## Onde
+
+- Site da tool: [agents.cajuos.dev](https://agents.cajuos.dev) (docs e config MCP)
+- Repositório público: [github.com/CajuOS/agents](https://github.com/CajuOS/agents)

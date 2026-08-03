@@ -26,6 +26,14 @@ export const tools: Tool[] = [
     hasApi: true,
     launchedAt: "2026-08-01",
   },
+  {
+    slug: "agents",
+    name: "Mídia pra Agents",
+    tagline: "API e MCP remoto que extraem áudio e vídeo de qualquer página, direto pro agent. Sem yt-dlp, sem ffmpeg.",
+    icon: "🤖",
+    hasApi: true,
+    launchedAt: "2026-08-03",
+  },
 ];
 
 // Data de início simbólica do experimento (semana 1)
