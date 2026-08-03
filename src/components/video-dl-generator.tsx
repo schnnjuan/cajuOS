@@ -164,7 +164,10 @@ export default function VideoDlGenerator() {
     try {
       const resp = await fetch(fileUrl);
       if (!resp.ok) throw new Error("download-failed");
-      const total = Number(resp.headers.get("Content-Length")) || null;
+      const total =
+        Number(resp.headers.get("Content-Length")) ||
+        Number(resp.headers.get("X-Estimated-Length")) ||
+        null;
 
       const picker = (window as unknown as {
         showSaveFilePicker?: (opts: {
@@ -223,6 +226,15 @@ export default function VideoDlGenerator() {
     }
   }, []);
 
+  const pasteFromClipboard = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) setUrl(text.trim());
+    } catch {
+      // permissão/clipboard indisponível
+    }
+  }, []);
+
   const commandCurl = (): string => {
     if (!result || !selected) return "";
     if (result.type === "hls") {
@@ -237,6 +249,11 @@ export default function VideoDlGenerator() {
       return `# HLS: aria2 não concatena .ts — use o comando curl acima`;
     }
     return `aria2c -x16 -s16 --referer='${result.page}' -o '${slugify(result.title)}_${quality}.${selected.ext}' '${selected.url}'`;
+  };
+
+  const commandFfmpeg = (): string => {
+    if (!result || !selected || result.type !== "hls") return "";
+    return `ffmpeg -y -i '${selected.url}' -c copy '${slugify(result.title)}_${quality}.mp4'`;
   };
 
   return (
@@ -264,15 +281,29 @@ export default function VideoDlGenerator() {
             <label className="text-sm font-medium text-foreground" htmlFor="dl-url">
               URL do vídeo
             </label>
-            <input
-              id="dl-url"
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleExtract()}
-              placeholder="https://exemplo.com/pagina-do-video"
-              className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-foreground"
-            />
+            <div className="mt-1 flex gap-2">
+              <input
+                id="dl-url"
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleExtract()}
+                placeholder="https://exemplo.com/pagina-do-video"
+                className="block w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-foreground"
+              />
+              {typeof navigator !== "undefined" &&
+                "clipboard" in navigator &&
+                typeof navigator.clipboard.readText === "function" && (
+                  <button
+                    type="button"
+                    onClick={pasteFromClipboard}
+                    title="Colar URL da área de transferência"
+                    className="pressable shrink-0 rounded-md border border-border px-3 py-2 text-sm text-muted hover:border-foreground"
+                  >
+                    Colar
+                  </button>
+                )}
+            </div>
           </div>
 
           <button
@@ -357,6 +388,14 @@ export default function VideoDlGenerator() {
                 >
                   {copied === "curl" ? "Copiado ✓" : "Copiar comando curl"}
                 </button>
+                <a
+                  href={result.page}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pressable rounded-md border border-border px-2.5 py-1.5 text-xs text-muted hover:border-foreground"
+                >
+                  Abrir página fonte
+                </a>
               </div>
 
               {downloading && (
@@ -434,6 +473,27 @@ export default function VideoDlGenerator() {
                   {commandAria2()}
                 </pre>
               </div>
+              {result.type === "hls" && (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium text-foreground">ffmpeg (remux p/ mp4)</span>
+                    <button
+                      type="button"
+                      onClick={() => copy(commandFfmpeg(), "api-ffmpeg")}
+                      className="pressable rounded-md border border-border px-2 py-1 text-[10px] text-muted hover:border-foreground"
+                    >
+                      {copied === "api-ffmpeg" ? "Copiado ✓" : "Copiar"}
+                    </button>
+                  </div>
+                  <pre className="overflow-x-auto rounded-md border border-border bg-background px-3 py-2 text-[10px] leading-relaxed text-muted">
+                    {commandFfmpeg()}
+                  </pre>
+                  <p className="text-xs text-muted">
+                    Sem re-encode, só remux — rápido e sem perda. O ffmpeg resolve segmentos e
+                    criptografia sozinho.
+                  </p>
+                </div>
+              )}
             </>
           ) : (
             <>

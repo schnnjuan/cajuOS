@@ -22,10 +22,10 @@ Links recentes ficam salvos no navegador (localStorage) pra reusar depois.
 ## Tipos de fonte
 
 - **MP4 direto**: a página expõe um arquivo de vídeo no HTML (`src` de `<video>` ou `<source>`, ou dentro de JSON). O download pega o arquivo original, sem re-encode.
-- **HLS (m3u8)**: a página usa streaming adaptativo. O worker lê o manifest, escolhe a variante e concatena os segmentos num `.ts` lossless, na velocidade máxima da rede.
+- **HLS (m3u8)**: a página usa streaming adaptativo. O worker lê o manifest, escolhe a variante e concatena os segmentos com download paralelo (5 por vez), em `.ts` lossless. Streams cifrados (AES-128) e fMP4 também funcionam.
 
 <Callout type="tip">
-  `.ts` é o formato nativo do HLS — VLC, mpv e ffplay reproduzem normal. Editores grandes (Premiere, Resolve) não abrem direto; nesse caso prefira página com mp4.
+  `.ts` é o formato nativo do HLS — VLC, mpv e ffplay reproduzem normal. Editores grandes (Premiere, Resolve) não abrem direto; a aba API tem comando ffmpeg que remuxa pra `.mp4` sem re-encode.
 </Callout>
 
 ## Qualidades
@@ -53,18 +53,24 @@ Para HLS, o comando usa o endpoint `/go` do worker, que resolve a variante e red
 curl -L 'https://video-dl.cajuos.dev/go?page=https://site.com/pagina&q=1080p' -o 'video_1080p.ts'
 ```
 
+Pra abrir o `.ts` em editor (Premiere, Resolve, CapCut), remux pro mp4 sem re-encode:
+
+```bash
+ffmpeg -y -i 'https://video-dl.cajuos.dev/go?page=https://site.com/pagina&q=1080p' -c copy 'video_1080p.mp4'
+```
+
 ## Limites
 
 - Só HTTP/HTTPS públicos — endereços locais e IPs privados são rejeitados
 - HLS: só vídeo sob demanda (VOD). Stream ao vivo retorna erro
-- HLS cifrado (AES-128) ainda não é suportado
+- HLS cifrado com SAMPLE-AES (DRM) não é suportado — AES-128 funciona
 - Site que exige login ou cookies de sessão pode bloquear a leitura
+- 30 extrações e 10 downloads por minuto por IP
 - O download respeita o tamanho do arquivo — o worker não limita banda
 
 ## Futuro
 
 - Batch/playlist (várias páginas de uma vez)
-- HLS cifrado
 - Stream ao vivo
 - Pass-through de cookies
 

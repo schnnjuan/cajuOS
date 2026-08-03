@@ -1,0 +1,31 @@
+---
+title: Video Downloader
+date: 2026-08-03
+description: HLS mais rápido (download paralelo), streams cifrados AES-128, fMP4, progresso estimado e comando ffmpeg.
+tool: video-dl
+---
+
+Atualização grande do Video Downloader: download HLS até 5× mais rápido, streams cifrados funcionando e remux pra mp4 sem perder qualidade.
+
+**O que mudou:**
+
+- **Download HLS paralelo** — segmentos baixados em grupos de 5 em vez de um a um; streams longos terminam bem mais rápido
+- **HLS cifrado (AES-128)** — agora descriptografa os segmentos na hora, sem depender de app externo
+- **fMP4** — streams com init segment (`EXT-X-MAP`) e byte ranges agora baixam corretos, em `.mp4` em vez de `.ts` corrompido
+- **Progresso estimado** — a barra de download mostra % aproximada também no HLS
+- **Comando ffmpeg** — aba API ganhou o remux `ffmpeg -i … -c copy out.mp4` pra abrir HLS em qualquer editor
+- **Cache** — extrações repetidas da mesma página respondem da memória (10 min), menos bloqueio por excesso de requests
+- **Rate limit** — 30 extrações e 10 downloads por minuto por IP, pra tool continuar rápida pra todo mundo
+- **Botão Colar** — cola a URL direto da área de transferência
+
+### Detalhes
+
+- Concorrência de segmentos com ordem estrita — sem risco de corromper o `.ts`
+- Criptografia resolvida com WebCrypto no worker, IV explícito ou derivado do media sequence
+- Cache e rate limit no Cloudflare KV
+
+### Limitações
+
+- Stream ao vivo continua fora (só VOD)
+- Cifras SAMPLE-AES (DRM) seguem sem suporte
+- Site que exige login pode bloquear a leitura
