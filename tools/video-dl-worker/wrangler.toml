@@ -10,5 +10,9 @@ routes = [
 [vars]
 ALLOWED_ORIGIN = "https://cajuos.dev"
 
+[[kv_namespaces]]
+binding = "VIDEO_DL_CACHE"
+id = "96f97fdb3a984003836924ce5ca238b8"
+
 [triggers]
 crons = []

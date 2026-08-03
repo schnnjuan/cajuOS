@@ -4,6 +4,61 @@ import { downloadHls } from "./download-hls";
 
 interface Env {
   ALLOWED_ORIGIN?: string;
+  VIDEO_DL_CACHE?: KVNamespace;
+}
+
+const CACHE_TTL = 600;
+
+/* Rate limit simples via KV (não atômico — race aceitável). */
+const RATE_LIMITS: Record<string, { perMinute: number }> = {
+  extract: { perMinute: 30 },
+  go: { perMinute: 30 },
+  dl: { perMinute: 10 },
+};
+
+async function rateLimited(
+  env: Env,
+  ip: string,
+  bucket: keyof typeof RATE_LIMITS
+): Promise<boolean> {
+  const cache = env.VIDEO_DL_CACHE;
+  if (!cache || !ip) return false;
+  const limit = RATE_LIMITS[bucket].perMinute;
+  const minute = Math.floor(Date.now() / 60_000);
+  const key = `rl:${bucket}:${ip}:${minute}`;
+  try {
+    const current = Number((await cache.get(key)) ?? "0");
+    if (current >= limit) return true;
+    await cache.put(key, String(current + 1), { expirationTtl: 120 });
+  } catch {
+    // sem KV, sem limit
+  }
+  return false;
+}
+
+async function cachedExtract(
+  page: string,
+  env: Env
+): Promise<{ result: ExtractResult; cached: boolean }> {
+  const cache = env.VIDEO_DL_CACHE;
+  const key = `v1:${page}`;
+  if (cache) {
+    try {
+      const hit = await cache.get(key, "json");
+      if (hit) return { result: hit as ExtractResult, cached: true };
+    } catch {
+      // cache indisponível — segue sem
+    }
+  }
+  const result = await extract(page);
+  if (result.ok && cache) {
+    try {
+      await cache.put(key, JSON.stringify(result), { expirationTtl: CACHE_TTL });
+    } catch {
+      // falha de cache não derruba a resposta
+    }
+  }
+  return { result, cached: false };
 }
 
 function allowedOrigins(env: Env): Set<string> {
@@ -84,43 +139,50 @@ function buildCommand(
 async function handleExtract(
   request: Request,
   url: URL,
-  cors: Headers
+  cors: Headers,
+  env: Env
 ): Promise<Response> {
   const page = assertPublicHttp(url.searchParams.get("page"));
   const format = (url.searchParams.get("format") ?? "json") as
     | "json"
     | "curl"
     | "aria2";
-  const result = await extract(page);
-  if (!result.ok) {
-    return Response.json(result, { status: 404, headers: cors });
+  const result = await cachedExtract(page, env);
+  if (!result.result.ok) {
+    return Response.json(result.result, { status: 404, headers: cors });
   }
   if (format === "curl" || format === "aria2") {
-    const text = buildCommand(result, format, new URL(request.url).origin);
+    const text = buildCommand(result.result, format, new URL(request.url).origin);
     const headers = new Headers(cors);
     headers.set("Content-Type", "text/plain; charset=utf-8");
+    headers.set("X-Cache", result.cached ? "HIT" : "MISS");
     return new Response(text, { headers });
   }
-  return Response.json(result, { headers: cors });
+  const headers = new Headers(cors);
+  headers.set("X-Cache", result.cached ? "HIT" : "MISS");
+  return Response.json(result.result, { headers });
 }
 
 async function handleGo(
   request: Request,
   url: URL,
-  cors: Headers
+  cors: Headers,
+  env: Env
 ): Promise<Response> {
   const page = assertPublicHttp(url.searchParams.get("page"));
   const q = url.searchParams.get("q");
-  const result = await extract(page);
-  if (!result.ok) {
-    return Response.json(result, { status: 404, headers: cors });
+  const result = await cachedExtract(page, env);
+  if (!result.result.ok) {
+    return Response.json(result.result, { status: 404, headers: cors });
   }
-  let source = result.sources[0];
-  if (q) source = result.sources.find((s) => s.quality === q) ?? source;
+  let source = result.result.sources[0];
+  if (q) source = result.result.sources.find((s) => s.quality === q) ?? source;
   const origin = new URL(request.url).origin;
-  const name = slugify(result.title);
-  const dl = `${origin}/${result.type === "hls" ? "dl/hls" : "dl/mp4"}?url=${encodeURIComponent(source.url)}&ref=${encodeURIComponent(result.page)}&name=${name}`;
-  return Response.redirect(dl, 302);
+  const name = slugify(result.result.title);
+  const dl = `${origin}/${result.result.type === "hls" ? "dl/hls" : "dl/mp4"}?url=${encodeURIComponent(source.url)}&ref=${encodeURIComponent(result.result.page)}&name=${name}`;
+  const headers = new Headers({ Location: dl });
+  headers.set("X-Cache", result.cached ? "HIT" : "MISS");
+  return new Response(null, { status: 302, headers });
 }
 
 async function handleDl(
@@ -157,8 +219,23 @@ export default {
 
     try {
       const path = url.pathname;
-      if (path === "/extract") return await handleExtract(request, url, cors);
-      if (path === "/go") return await handleGo(request, url, cors);
+      const ip = request.headers.get("CF-Connecting-IP") ?? "";
+      let bucket: keyof typeof RATE_LIMITS | null = null;
+      if (path === "/extract") bucket = "extract";
+      else if (path === "/go") bucket = "go";
+      else if (path === "/dl/mp4" || path === "/dl/hls") bucket = "dl";
+
+      if (bucket && (await rateLimited(env, ip, bucket))) {
+        const resp = Response.json(
+          { ok: false, error: "rate-limited" },
+          { status: 429, headers: cors }
+        );
+        resp.headers.set("Retry-After", "60");
+        return resp;
+      }
+
+      if (path === "/extract") return await handleExtract(request, url, cors, env);
+      if (path === "/go") return await handleGo(request, url, cors, env);
       if (path === "/dl/mp4" || path === "/dl/hls") {
         return await handleDl(request, url, cors);
       }
