@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const WORKER =
   process.env.NODE_ENV === "development"
@@ -88,6 +88,11 @@ export default function VideoDlGenerator() {
   const [progress, setProgress] = useState<number | null>(null);
   const [copied, setCopied] = useState("");
   const [tab, setTab] = useState<"extract" | "api">("extract");
+  const [canPaste, setCanPaste] = useState(false);
+
+  useEffect(() => {
+    setCanPaste(typeof navigator !== "undefined" && !!navigator.clipboard?.readText);
+  }, []);
 
   const saveHistory = useCallback((entry: HistoryEntry) => {
     setHistory((prev) => {
@@ -291,18 +296,16 @@ export default function VideoDlGenerator() {
                 placeholder="https://exemplo.com/pagina-do-video"
                 className="block w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-foreground"
               />
-              {typeof navigator !== "undefined" &&
-                "clipboard" in navigator &&
-                typeof navigator.clipboard.readText === "function" && (
-                  <button
-                    type="button"
-                    onClick={pasteFromClipboard}
-                    title="Colar URL da área de transferência"
-                    className="pressable shrink-0 rounded-md border border-border px-3 py-2 text-sm text-muted hover:border-foreground"
-                  >
-                    Colar
-                  </button>
-                )}
+              {canPaste && (
+                <button
+                  type="button"
+                  onClick={pasteFromClipboard}
+                  title="Colar URL da área de transferência"
+                  className="pressable shrink-0 rounded-md border border-border px-3 py-2 text-sm text-muted hover:border-foreground"
+                >
+                  Colar
+                </button>
+              )}
             </div>
           </div>
 
