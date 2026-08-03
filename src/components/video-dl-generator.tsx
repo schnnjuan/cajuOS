@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore, useState } from "react";
 
 const WORKER =
   process.env.NODE_ENV === "development"
@@ -88,11 +88,12 @@ export default function VideoDlGenerator() {
   const [progress, setProgress] = useState<number | null>(null);
   const [copied, setCopied] = useState("");
   const [tab, setTab] = useState<"extract" | "api">("extract");
-  const [canPaste, setCanPaste] = useState(false);
-
-  useEffect(() => {
-    setCanPaste(typeof navigator !== "undefined" && !!navigator.clipboard?.readText);
-  }, []);
+  const noopSubscribe = () => () => {};
+  const canPaste = useSyncExternalStore(
+    noopSubscribe,
+    () => typeof navigator !== "undefined" && !!navigator.clipboard?.readText,
+    () => false
+  );
 
   const saveHistory = useCallback((entry: HistoryEntry) => {
     setHistory((prev) => {
