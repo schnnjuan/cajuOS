@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { listContentItems, readContentItem, saveContent } from "@/lib/admin-content";
+import {
+  listContentItems,
+  readContentItem,
+  saveContent,
+  deleteContent,
+} from "@/lib/admin-content";
 import { verifyToken, COOKIE_NAME, isAdminEmail } from "@/lib/auth";
 
 async function requireAdmin(): Promise<NextResponse | null> {
@@ -39,14 +44,14 @@ export async function GET(request: Request) {
   }
 
   if (slug) {
-    const item = readContentItem(type, slug);
+    const item = await readContentItem(type, slug);
     if (!item) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     return NextResponse.json(item);
   }
 
-  const items = listContentItems(type);
+  const items = await listContentItems(type);
   return NextResponse.json({ items });
 }
 
@@ -76,6 +81,32 @@ export async function POST(request: Request) {
       originalSlug: body.originalSlug,
       tool: body.tool,
     });
+    return NextResponse.json(result);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+/* DELETE /api/admin/content?type=blog&slug=hello[&draft=1] */
+export async function DELETE(request: Request) {
+  const err = await requireAdmin();
+  if (err) return err;
+
+  const { searchParams } = new URL(request.url);
+  const type = searchParams.get("type");
+  const slug = searchParams.get("slug");
+  const draft = searchParams.get("draft") === "1";
+
+  if (!type || !slug) {
+    return NextResponse.json({ error: "Missing type or slug" }, { status: 400 });
+  }
+
+  try {
+    const result = await deleteContent(type, slug, draft);
+    if (!result.ok && result.notFound) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
     return NextResponse.json(result);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
