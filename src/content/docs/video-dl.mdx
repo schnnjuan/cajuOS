@@ -25,7 +25,7 @@ Links recentes ficam salvos no navegador (localStorage) pra reusar depois.
 - **HLS (m3u8)**: a página usa streaming adaptativo. O worker lê o manifest, escolhe a variante e concatena os segmentos com download paralelo (5 por vez), em `.ts` lossless. Streams cifrados (AES-128) e fMP4 também funcionam.
 
 <Callout type="tip">
-  `.ts` é o formato nativo do HLS — VLC, mpv e ffplay reproduzem normal. Editores grandes (Premiere, Resolve) não abrem direto; a aba API tem comando ffmpeg que remuxa pra `.mp4` sem re-encode.
+  `.ts` é o formato nativo do HLS. VLC, mpv e ffplay reproduzem normal. Editores grandes (Premiere, Resolve) não abrem direto. A aba API tem comando ffmpeg que remuxa pra `.mp4` sem re-encode.
 </Callout>
 
 ## Qualidades
@@ -61,12 +61,12 @@ ffmpeg -y -i 'https://video-dl.cajuos.dev/go?page=https://site.com/pagina&q=1080
 
 ## Limites
 
-- Só HTTP/HTTPS públicos — endereços locais e IPs privados são rejeitados
+- Só HTTP/HTTPS públicos. Endereços locais e IPs privados são rejeitados
 - HLS: só vídeo sob demanda (VOD). Stream ao vivo retorna erro
-- HLS cifrado com SAMPLE-AES (DRM) não é suportado — AES-128 funciona
+- HLS cifrado com SAMPLE-AES (DRM) não é suportado. AES-128 funciona
 - Site que exige login ou cookies de sessão pode bloquear a leitura
 - 30 extrações e 10 downloads por minuto por IP
-- O download respeita o tamanho do arquivo — o worker não limita banda
+- O download respeita o tamanho do arquivo. O worker não limita banda
 
 ## Futuro
 
@@ -76,7 +76,7 @@ ffmpeg -y -i 'https://video-dl.cajuos.dev/go?page=https://site.com/pagina&q=1080
 
 ## Stack
 
-Cloudflare Worker (`video-dl.cajuos.dev`) em TypeScript — extração, proxy de download e concatenação HLS. Componente React client-side no Next.js.
+Cloudflare Worker (`video-dl.cajuos.dev`) em TypeScript faz extração, proxy de download e concatenação HLS. Componente React client-side no Next.js.
 
 ## Código
 

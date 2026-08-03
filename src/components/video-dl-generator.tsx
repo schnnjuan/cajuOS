@@ -31,11 +31,11 @@ const ERROR_MESSAGES: Record<string, string> = {
   "private-url": "URL privada (localhost/IP interno) não é permitida.",
   "no-source":
     "Nenhum vídeo encontrado nesta página. Ela precisa expor um arquivo mp4/webm/mov ou um manifest m3u8 no HTML.",
-  blocked: "O site bloqueou a leitura (403). Alguns hosts exigem cookies de sessão — tente a aba API com o curl direto.",
+  blocked: "O site bloqueou a leitura (403). Alguns hosts exigem cookies de sessão. Tenta a aba API com o curl direto.",
   "page-failed": "Não foi possível carregar a página.",
   "manifest-failed": "O manifest HLS falhou ao carregar.",
-  "live-stream": "Stream ao vivo não é suportado — só vídeos sob demanda.",
-  "encrypted-unsupported": "Stream cifrado (AES-128) ainda não é suportado.",
+  "live-stream": "Stream ao vivo não rola. Só vídeo sob demanda.",
+  "encrypted-unsupported": "Stream com DRM (SAMPLE-AES) não é suportado.",
   "segment-failed": "Falha ao baixar segmentos do HLS.",
   "source-failed": "O servidor do arquivo recusou o download.",
 };
@@ -252,7 +252,7 @@ export default function VideoDlGenerator() {
   const commandAria2 = (): string => {
     if (!result || !selected) return "";
     if (result.type === "hls") {
-      return `# HLS: aria2 não concatena .ts — use o comando curl acima`;
+      return `# HLS: aria2 não concatena .ts. Usa o comando curl acima`;
     }
     return `aria2c -x16 -s16 --referer='${result.page}' -o '${slugify(result.title)}_${quality}.${selected.ext}' '${selected.url}'`;
   };
@@ -413,7 +413,7 @@ export default function VideoDlGenerator() {
                   <span className="text-[10px] text-muted">
                     {progress != null
                       ? `${Math.round(progress * 100)}%`
-                      : "Tamanho desconhecido — aguarde"}
+                      : "Tamanho desconhecido, aguarde"}
                   </span>
                 </div>
               )}
@@ -444,7 +444,7 @@ export default function VideoDlGenerator() {
           {result && selected ? (
             <>
               <p className="text-xs text-muted">
-                Comandos prontos pro terminal — úteis pra arquivos grandes ou automação. O curl usa
+                Comandos prontos pro terminal, úteis pra arquivos grandes ou automação. O curl usa
                 User-Agent + Referer, então passa onde o curl puro toma 403.
               </p>
               <div className="flex flex-col gap-2">
@@ -493,7 +493,7 @@ export default function VideoDlGenerator() {
                     {commandFfmpeg()}
                   </pre>
                   <p className="text-xs text-muted">
-                    Sem re-encode, só remux — rápido e sem perda. O ffmpeg resolve segmentos e
+                    Sem re-encode, só remux. Rápido e sem perda. O ffmpeg resolve segmentos e
                     criptografia sozinho.
                   </p>
                 </div>

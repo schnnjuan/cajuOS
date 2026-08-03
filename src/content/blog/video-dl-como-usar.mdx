@@ -7,7 +7,7 @@ tool: video-dl
 
 ## O problema
 
-Você acha um vídeo numa página, o player toca, mas não tem botão de download. O arquivo está lá — num `<video>`, num `<source>`, dentro de um JSON — mas pegar ele na mão dá trabalho:
+Você acha um vídeo numa página, o player toca, mas não tem botão de download. O arquivo está lá, num `<video>`, num `<source>`, dentro de um JSON. Mas pegar ele na mão dá trabalho:
 
 - Abrir DevTools e caçar a tag certa
 - Copiar a URL, que às vezes é relativa
@@ -31,9 +31,9 @@ Site com streaming adaptativo não serve um mp4 fixo. Ele quebra o vídeo em dez
 Juntar os pedaços dá pra fazer de dois jeitos:
 
 - **No navegador, em tempo real**: reproduz o vídeo e grava a tela. Um vídeo de 30 minutos custa 30 minutos e re-encodeia.
-- **No worker, em velocidade máxima**: o servidor lê a lista, baixa os pedaços em sequência e entrega um stream único.
+- **No worker, em velocidade máxima**: o servidor lê a lista, baixa os pedaços em paralelo e entrega um stream único.
 
-O CajuOS usa o segundo. O resultado é um `.ts` — o formato nativo do HLS, sem perda nenhuma. VLC e mpv tocam direto.
+O CajuOS usa o segundo. O resultado é um `.ts`, o formato nativo do HLS. Sem perda nenhuma. VLC e mpv tocam direto.
 
 ## Pra usar no terminal
 
@@ -46,7 +46,7 @@ curl -L -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0 Safa
   'https://cdn.site.com/video_1080p.mp4'
 ```
 
-O curl puro toma 403 porque vai sem User-Agent e sem Referer. O comando gerado carrega os dois — passa onde o curl nu não passa.
+O curl puro toma 403 porque vai sem User-Agent e sem Referer. O comando gerado carrega os dois. Passa onde o curl nu não passa.
 
 Para HLS, um comando só, via endpoint `/go` do worker:
 
@@ -54,13 +54,13 @@ Para HLS, um comando só, via endpoint `/go` do worker:
 curl -L 'https://video-dl.cajuos.dev/go?page=https://site.com/pagina&q=1080p' -o 'video_1080p.ts'
 ```
 
-Dá pra jogar num script ou num for-loop com uma lista de páginas. A API existe porque o download de vídeo sempre foi problema de terminal — a UI só mostra o caminho.
+Dá pra jogar num script ou num for-loop com uma lista de páginas. A API existe porque o download de vídeo sempre foi problema de terminal. A UI só mostra o caminho.
 
 ## Limitações
 
 - Site que exige login pode bloquear a leitura
-- HLS cifrado (AES-128) e stream ao vivo retornam erro — ainda não suportados
-- `.ts` não abre em editores grandes (Premiere, Resolve) — pra edição, prefira página com mp4
+- Stream ao vivo retorna erro, só VOD. HLS com DRM (SAMPLE-AES) também. Cifra AES-128 funciona
+- `.ts` não abre em editores grandes (Premiere, Resolve). Pra edição, usa o comando ffmpeg da aba API ou prefere página com mp4
 
 ## Fechando
 

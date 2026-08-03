@@ -1,27 +1,27 @@
 ---
 title: Video Downloader
 date: 2026-08-01
-description: Tool #2 do CajuOS. Cola o link, baixa o vídeo pela fonte exata — mp4 ou HLS, no navegador ou no terminal.
+description: Tool #2 do CajuOS. Cola o link, baixa o vídeo pela fonte exata. mp4 ou HLS, no navegador ou no terminal.
 tool: video-dl
 ---
 
-A segunda tool do CajuOS chegou. Você cola o link de uma página com vídeo e ela devolve o arquivo da fonte — o mp4 real, não o player. Se a página usa streaming adaptativo, ela junta os segmentos num `.ts` sem re-encode.
+A segunda tool do CajuOS chegou. Você cola o link de uma página com vídeo e ela devolve o arquivo da fonte, o mp4 real, não o player. Se a página usa streaming adaptativo, ela junta os segmentos num `.ts` sem re-encode.
 
 **O que vem incluso:**
 
-- **Extração genérica** — mp4/m4v/webm/mkv direto do HTML, incluindo paths relativos e URLs dentro de atributos
-- **Qualidade** — seletor de 2160p a 360p com tamanho estimado
-- **HLS** — detecta manifest m3u8, lista as variantes e concatena os segmentos
-- **Download com progresso** — File System Access API no Chrome/Edge, fallback pra blob
-- **Comandos pra terminal** — aba API gera curl e aria2c com User-Agent e Referer; `/go` resolve e redireciona
-- **Histórico** — últimos 10 links salvos no navegador
-- **Erros claros** — bloqueio (403), stream ao vivo, HLS cifrado e página sem vídeo têm mensagem própria
+- **Extração genérica**: mp4/m4v/webm/mkv direto do HTML, incluindo paths relativos e URLs dentro de atributos
+- **Qualidade**: seletor de 2160p a 360p com tamanho estimado
+- **HLS**: detecta manifest m3u8, lista as variantes e concatena os segmentos
+- **Download com progresso**: File System Access API no Chrome/Edge, fallback pra blob
+- **Comandos pra terminal**: aba API gera curl e aria2c com User-Agent e Referer; `/go` resolve e redireciona
+- **Histórico**: últimos 10 links salvos no navegador
+- **Erros claros**: bloqueio (403), stream ao vivo, HLS cifrado e página sem vídeo têm mensagem própria
 
 ### Detalhes
 
-- Worker Cloudflare (`video-dl.cajuos.dev`) em TypeScript — extração, proxy de download e concatenação HLS
+- Worker Cloudflare (`video-dl.cajuos.dev`) em TypeScript: extração, proxy de download e concatenação HLS
 - Concatenação no worker em vez de gravação em tempo real no navegador: velocidade máxima, zero perda
-- Guard SSRF — rejeita localhost e IPs privados
+- Guard SSRF: rejeita localhost e IPs privados
 - Endpoints públicos: `/extract`, `/go`, `/dl/mp4`, `/dl/hls`
 
 ### Limitações
