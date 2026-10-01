@@ -26,6 +26,14 @@ export const tools: Tool[] = [
     hasApi: true,
     launchedAt: "2026-08-01",
   },
+  {
+    slug: "churrasco",
+    name: "Calculadora de Churrasco",
+    tagline: "Quantas pessoas, quantas horas — e a lista de compras pronta pra mandar no WhatsApp.",
+    icon: "🥩",
+    hasApi: false,
+    launchedAt: "2026-10-01",
+  },
 ];
 
 // Data de início simbólica do experimento (semana 1)

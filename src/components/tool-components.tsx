@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 const toolComponents: Record<string, ComponentType> = {
   "og-image": dynamic(() => import("./og-image-generator")),
   "video-dl": dynamic(() => import("./video-dl-generator")),
+  churrasco: dynamic(() => import("./churrasco-calculator")),
 };
 
 export function getToolComponent(slug: string): ComponentType | null {

@@ -1,0 +1,23 @@
+---
+title: Calculadora de Churrasco
+date: 2026-10-01
+description: Tool #3 do CajuOS. Quantas pessoas, quantas horas — e a lista de compras pronta pra mandar no WhatsApp.
+tool: churrasco
+---
+
+A terceira tool do CajuOS chegou. Você diz quantos homens, mulheres, crianças e horas de festa — ela devolve a lista de compras: carne, cerveja, carvão, pão de alho, gelo e sal grosso.
+
+**O que vem incluso:**
+
+- **Cálculo por perfil**: 450 g por homem, 350 g por mulher, 200 g por criança
+- **Festa longa**: acima de 4 horas, +20% na carne e na bebida
+- **Cerveja em latas**: 4 latas (350 ml) por quem bebe, convertido em packs de 12
+- **Carvão e gelo**: sacos de 3 kg e 5 kg, arredondado pra cima
+- **Botão WhatsApp**: manda a lista pronta no grupo do churrasco
+- **Link compartilhável**: `?h=5&m=3&c=2` abre a conta pronta
+- **Offline-friendly**: tudo roda no navegador, inputs salvos no localStorage
+
+### Detalhes
+
+- Componente client-side puro (`churrasco-calculator.tsx`), zero backend, zero dependência nova
+- Números sempre arredondados pra cima — churrasco que falta carne não é churrasco
