@@ -43,23 +43,18 @@ function load(): Inputs {
 }
 
 export default function ChurrascoCalculator() {
-  const [inputs, setInputs] = useState<Inputs>(DEFAULTS);
-  const [ready, setReady] = useState(false);
+  const [inputs, setInputs] = useState<Inputs>(() =>
+    typeof window === "undefined" ? DEFAULTS : load(),
+  );
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    setInputs(load());
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(inputs));
     } catch {
       // storage cheio/bloqueado: segue sem persistir
     }
-  }, [inputs, ready]);
+  }, [inputs]);
 
   const set = (k: keyof Inputs) => (v: string) => {
     const n = v === "" ? 0 : Number(v);
