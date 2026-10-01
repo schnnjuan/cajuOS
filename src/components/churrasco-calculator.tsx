@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const STORE_KEY = "cajuos:churrasco";
+
+// Base de cálculo (kg por pessoa, latas por bebedor). Muda aqui, muda em tudo.
+const BASE = { h: 0.45, m: 0.35, c: 0.2, latas: 4, longa: 1.2, longaHoras: 4 };
 
 type Inputs = { h: number; m: number; c: number; horas: number; bebem: number | null };
 
@@ -10,6 +13,14 @@ const DEFAULTS: Inputs = { h: 5, m: 3, c: 2, horas: 4, bebem: null };
 
 function clamp(n: number): number {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+
+function fmt(n: number): string {
+  return n.toString().replace(".", ",");
+}
+
+function pl(n: number, um: string, varios?: string): string {
+  return n === 1 ? um : (varios ?? `${um}s`);
 }
 
 function load(): Inputs {
@@ -47,6 +58,7 @@ export default function ChurrascoCalculator() {
     typeof window === "undefined" ? DEFAULTS : load(),
   );
   const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     try {
@@ -56,6 +68,10 @@ export default function ChurrascoCalculator() {
     }
   }, [inputs]);
 
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
+
   const set = (k: keyof Inputs) => (v: string) => {
     const n = v === "" ? 0 : Number(v);
     setInputs((p) => ({ ...p, [k]: k === "bebem" && v === "" ? null : clamp(n) }));
@@ -64,10 +80,10 @@ export default function ChurrascoCalculator() {
   const r = useMemo(() => {
     const { h, m, c, horas } = inputs;
     const bebem = inputs.bebem ?? h + m;
-    const longo = horas > 4;
-    const f = longo ? 1.2 : 1;
-    const carneKg = Math.ceil(((h * 0.45 + m * 0.35 + c * 0.2) * f) * 2) / 2;
-    const latas = Math.ceil(bebem * 4 * f);
+    const longo = horas > BASE.longaHoras;
+    const f = longo ? BASE.longa : 1;
+    const carneKg = Math.ceil(((h * BASE.h + m * BASE.m + c * BASE.c) * f) * 2) / 2;
+    const latas = Math.ceil(bebem * BASE.latas * f);
     const carvaoKg = carneKg > 0 ? Math.max(3, Math.ceil(carneKg)) : 0;
     return {
       pessoas: h + m + c,
@@ -86,12 +102,12 @@ export default function ChurrascoCalculator() {
 
   const lista = useMemo(() => {
     const p: string[] = [];
-    p.push(`🥩 CHURRASCO — ${r.pessoas} pessoas (${inputs.h}H ${inputs.m}M ${inputs.c}C, ~${inputs.horas}h)`);
-    if (r.carneKg > 0) p.push(`· Carne: ${r.carneKg.toString().replace(".", ",")} kg`);
-    if (r.latas > 0) p.push(`· Cerveja: ${r.latas} latas (${r.packs12} pack${r.packs12 > 1 ? "s" : ""} de 12)`);
-    if (r.carvaoKg > 0) p.push(`· Carvão: ${r.carvaoKg} kg (${r.sacosCarvao} saco${r.sacosCarvao > 1 ? "s" : ""} de 3 kg)`);
+    p.push(`🥩 CHURRASCO — ${r.pessoas} ${pl(r.pessoas, "pessoa")} (${inputs.h}H ${inputs.m}M ${inputs.c}C, ~${inputs.horas}h)`);
+    if (r.carneKg > 0) p.push(`· Carne: ${fmt(r.carneKg)} kg`);
+    if (r.latas > 0) p.push(`· Cerveja: ${r.latas} latas (${r.packs12} ${pl(r.packs12, "pack")} de 12)`);
+    if (r.carvaoKg > 0) p.push(`· Carvão: ${r.carvaoKg} kg (${r.sacosCarvao} ${pl(r.sacosCarvao, "saco")} de 3 kg)`);
     if (r.paoAlho > 0) p.push(`· Pão de alho: ${r.paoAlho} un`);
-    if (r.geloSacos > 0) p.push(`· Gelo: ${r.geloSacos} saco${r.geloSacos > 1 ? "s" : ""} de 5 kg`);
+    if (r.geloSacos > 0) p.push(`· Gelo: ${r.geloSacos} ${pl(r.geloSacos, "saco", "sacos")} de 5 kg`);
     if (r.salG > 0) p.push(`· Sal grosso: ${r.salG} g`);
     p.push("cajuos.dev/tools/churrasco");
     return p.join("\n");
@@ -101,7 +117,8 @@ export default function ChurrascoCalculator() {
     try {
       await navigator.clipboard.writeText(lista);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       // clipboard bloqueado: usuário copia manual
     }
@@ -118,13 +135,14 @@ export default function ChurrascoCalculator() {
   ];
 
   const rows: [string, string][] = [
-    ["Carne", r.carneKg > 0 ? `${r.carneKg.toString().replace(".", ",")} kg` : "—"],
-    ["Cerveja (lata 350 ml)", r.latas > 0 ? `${r.latas} latas · ${r.packs12} pack${r.packs12 > 1 ? "s" : ""} de 12` : "—"],
-    ["Carvão", r.carvaoKg > 0 ? `${r.carvaoKg} kg · ${r.sacosCarvao} saco${r.sacosCarvao > 1 ? "s" : ""} de 3 kg` : "—"],
+    ["Carne", r.carneKg > 0 ? `${fmt(r.carneKg)} kg` : "—"],
+    ["Cerveja (lata 350 ml)", r.latas > 0 ? `${r.latas} latas · ${r.packs12} ${pl(r.packs12, "pack")} de 12` : "—"],
+    ["Carvão", r.carvaoKg > 0 ? `${r.carvaoKg} kg · ${r.sacosCarvao} ${pl(r.sacosCarvao, "saco")} de 3 kg` : "—"],
     ["Pão de alho", r.paoAlho > 0 ? `${r.paoAlho} un` : "—"],
-    ["Gelo (saco 5 kg)", r.geloSacos > 0 ? `${r.geloSacos} saco${r.geloSacos > 1 ? "s" : ""}` : "—"],
+    ["Gelo (saco 5 kg)", r.geloSacos > 0 ? `${r.geloSacos} ${pl(r.geloSacos, "saco", "sacos")}` : "—"],
     ["Sal grosso", r.salG > 0 ? `${r.salG} g` : "—"],
   ];
+  const vazio = r.pessoas === 0;
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -153,13 +171,14 @@ export default function ChurrascoCalculator() {
         ))}
       </ul>
       <p className="mt-2 text-xs text-muted">
-        Base: 450 g/adulto H · 350 g/adulto M · 200 g/criança · 4 latas por quem bebe
-        {r.longo ? " · +20% (festa longa)" : ""}. Arredondado pra cima, sem miséria.
+        Base: {BASE.h * 1000} g/adulto H · {BASE.m * 1000} g/adulto M · {BASE.c * 1000} g/criança · {BASE.latas} latas por quem bebe
+        {r.longo ? ` · +${Math.round((BASE.longa - 1) * 100)}% (festa longa)` : ""}. Arredondado pra cima, sem miséria.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           onClick={copy}
+          disabled={vazio}
           className="pressable rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background disabled:opacity-50"
         >
           {copied ? "Copiado!" : "Copiar lista"}
@@ -168,7 +187,9 @@ export default function ChurrascoCalculator() {
           href={wa}
           target="_blank"
           rel="noopener noreferrer"
-          className="pressable rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors hover:border-foreground"
+          aria-disabled={vazio}
+          onClick={vazio ? (e) => e.preventDefault() : undefined}
+          className={`pressable rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors hover:border-foreground${vazio ? " pointer-events-none opacity-50" : ""}`}
         >
           Enviar no WhatsApp →
         </a>
