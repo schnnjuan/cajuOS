@@ -34,6 +34,14 @@ export const tools: Tool[] = [
     hasApi: false,
     launchedAt: "2026-10-01",
   },
+  {
+    slug: "stickers",
+    name: "Gerador de Figurinhas",
+    tagline: "Faz figurinha pro WhatsApp de foto, gif ou vídeo de até 10s — quadrada, rápida, com pacote pronto.",
+    icon: "🙂",
+    hasApi: true,
+    launchedAt: "2026-10-24",
+  },
 ];
 
 // Data de início simbólica do experimento (semana 1)
