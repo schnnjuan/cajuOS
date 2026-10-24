@@ -9,7 +9,7 @@ const ANIM_FPS = 12;
 const MAX_FRAMES = 120; // 10s × 12fps
 const MAX_INPUT_BYTES = 4 * 1024 * 1024; // limite de body do Vercel é 4.5MB
 
-type Sticker = { blob: Blob; anim: boolean };
+type Sticker = { blob: Blob; png: Blob; anim: boolean };
 
 type Status = "idle" | "read" | "send" | "done" | "error";
 
@@ -132,9 +132,20 @@ async function extract(
   throw new Error("codeco-quente");
 }
 
+// PNG da primeira frame — pro share do iOS, que finge death no webp
+async function firstFramePng(blob: Blob): Promise<Blob | null> {
+  const bmp = await createImageBitmap(blob);
+  const c = document.createElement("canvas");
+  c.width = SIZE;
+  c.height = SIZE;
+  c.getContext("2d")?.drawImage(bmp, 0, 0);
+  bmp.close?.();
+  return new Promise<Blob | null>((resolve) => c.toBlob(resolve, "image/png"));
+}
+
 async function convert(
   file: File
-): Promise<{ blob: Blob; anim: boolean }> {
+): Promise<{ blob: Blob; png: Blob; anim: boolean }> {
   const { frames, fps, mode } = await extract(file);
   if (frames.length === 0) throw new Error("sem-frame");
   const form = new FormData();
@@ -148,7 +159,10 @@ async function convert(
   }
   const data = await resp.json();
   const bytes = Uint8Array.from(atob(data.webp), (c) => c.charCodeAt(0));
-  return { blob: new Blob([bytes], { type: "image/webp" }), anim: data.anim };
+  const blob = new Blob([bytes], { type: "image/webp" });
+  const png = await firstFramePng(blob);
+  if (!png) throw new Error("inoquear");
+  return { blob, png, anim: data.anim };
 }
 
 function download(blob: Blob, name: string) {
@@ -162,23 +176,44 @@ function download(blob: Blob, name: string) {
   URL.revokeObjectURL(a.href);
 }
 
-// Web Share nível 2 (mobile) abre o WhatsApp com a figurinha.
-// No desktop não existe — cai pra WhatsApp Web: copia e cola (estático)
-// ou baixa e anexa (animado).
-async function sendToWhatsapp(blob: Blob, anim: boolean, title: string): Promise<string> {
-  const file = new File([blob], "figurinha.webp", { type: "image/webp" });
-  if (navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
+function isIOS(): boolean {
+  return (
+    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    // iPadOS 13+ finge ser Mac com pontos de toque
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
+// Mobile: Web Share com a figurinha. iOS fede a webp (file share vira
+// arquivo morto sem preview) — usa PNG gerado na conversão, e o WhatsApp
+// oferece "criar adesivo" segurando na imagem. Desktop: clipboard/copy
+// ou download+anexa.
+function sendToWhatsapp(
+  blob: Blob,
+  png: Blob,
+  anim: boolean,
+  title: string
+): Promise<string> {
+  const webpFile = new File([blob], "figurinha.webp", { type: "image/webp" });
+  const pngFile = new File([png], "figurinha.png", { type: "image/png" });
+  const shareFile = isIOS() ? pngFile : webpFile;
+  if (navigator.canShare?.({ files: [shareFile] })) {
+    return navigator
+      .share({
+        files: [shareFile],
         title,
         text: "Figurinha feita no cajuOS",
-      });
-      return "Enviado pra escolher o contato 👍";
-    } catch (e) {
-      if ((e as Error).name === "AbortError") return "";
-    }
+      })
+      .then(
+        () => "Veio o WhatsApp?",
+        (e: unknown) => ((e as Error).name === "AbortError" ? "" : null)
+      )
+      .then((got) => got ?? fallbackAfterShare(blob, anim));
   }
+  return fallbackAfterShare(blob, anim);
+}
+
+async function fallbackAfterShare(blob: Blob, anim: boolean): Promise<string> {
   // Desktop + estático: ClipboardItem aceita png universalmente
   if (!anim && navigator.clipboard?.write && window.ClipboardItem) {
     try {
@@ -194,10 +229,10 @@ async function sendToWhatsapp(blob: Blob, anim: boolean, title: string): Promise
       if (png) {
         await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
         window.open("https://web.whatsapp.com/", "_blank");
-        return "Imagem copiada — abre (ou colou no) chat e cola com Ctrl+V";
+        return "Imagem copiada — no chat do zap web, cola com Ctrl+V";
       }
     } catch {
-      // sem permissão/decoy — cai pro download
+      // sem permissão/paleta — cai pro download
     }
   }
   download(blob, "figurinha.webp");
@@ -279,8 +314,8 @@ export default function StickerMaker() {
     setResult(null);
     if (resultUrl) URL.revokeObjectURL(resultUrl);
     try {
-      const { blob, anim } = await convert(file);
-      setResult({ blob, anim });
+      const { blob, png, anim } = await convert(file);
+      setResult({ blob, png, anim });
       setResultUrl(URL.createObjectURL(blob));
       setStatus("done");
     } catch (e) {
@@ -358,7 +393,12 @@ export default function StickerMaker() {
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               <button
                 onClick={() =>
-                  void sendToWhatsapp(result.blob, result.anim, title).then(setZapMsg)
+                  void sendToWhatsapp(
+                    result.blob,
+                    result.png,
+                    result.anim,
+                    title
+                  ).then(setZapMsg)
                 }
                 className="pressable rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background"
               >
