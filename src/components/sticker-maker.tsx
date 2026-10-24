@@ -162,8 +162,10 @@ function download(blob: Blob, name: string) {
   URL.revokeObjectURL(a.href);
 }
 
-// Web Share nível 2: abre o WhatsApp (entre outros) com a figurinha.
-async function shareOrDownload(blob: Blob, title: string) {
+// Web Share nível 2 (mobile) abre o WhatsApp com a figurinha.
+// No desktop não existe — cai pra WhatsApp Web: copia e cola (estático)
+// ou baixa e anexa (animado).
+async function sendToWhatsapp(blob: Blob, anim: boolean, title: string): Promise<string> {
   const file = new File([blob], "figurinha.webp", { type: "image/webp" });
   if (navigator.canShare?.({ files: [file] })) {
     try {
@@ -172,12 +174,37 @@ async function shareOrDownload(blob: Blob, title: string) {
         title,
         text: "Figurinha feita no cajuOS",
       });
-      return;
+      return "Enviado pra escolher o contato 👍";
     } catch (e) {
-      if ((e as Error).name === "AbortError") return;
+      if ((e as Error).name === "AbortError") return "";
+    }
+  }
+  // Desktop + estático: ClipboardItem aceita png universalmente
+  if (!anim && navigator.clipboard?.write && window.ClipboardItem) {
+    try {
+      const bmp = await createImageBitmap(blob);
+      const c = document.createElement("canvas");
+      c.width = SIZE;
+      c.height = SIZE;
+      c.getContext("2d")?.drawImage(bmp, 0, 0);
+      bmp.close?.();
+      const png = await new Promise<Blob | null>((resolve) =>
+        c.toBlob(resolve, "image/png")
+      );
+      if (png) {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+        window.open("https://web.whatsapp.com/", "_blank");
+        return "Imagem copiada — abre (ou colou no) chat e cola com Ctrl+V";
+      }
+    } catch {
+      // sem permissão/decoy — cai pro download
     }
   }
   download(blob, "figurinha.webp");
+  window.open("https://web.whatsapp.com/", "_blank");
+  return anim
+    ? "Baixou — anexa o arquivo (webp) no chat do WhatsApp Web"
+    : "Baixou e abriu o zap web — anexa o arquivo no chat";
 }
 
 // Pacote .wastickers = zip (STORE) com title.txt, author.txt, webps por
@@ -243,6 +270,7 @@ export default function StickerMaker() {
   const [title, setTitle] = useState("Minhas figurinhas");
   const [author, setAuthor] = useState("cajuOS");
   const [packing, setPacking] = useState(false);
+  const [zapMsg, setZapMsg] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(file: File) {
@@ -329,7 +357,9 @@ export default function StickerMaker() {
             />
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               <button
-                onClick={() => void shareOrDownload(result.blob, title)}
+                onClick={() =>
+                  void sendToWhatsapp(result.blob, result.anim, title).then(setZapMsg)
+                }
                 className="pressable rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background"
               >
                 Mandar no zap
@@ -353,6 +383,9 @@ export default function StickerMaker() {
                 Outra
               </button>
             </div>
+            {zapMsg && (
+              <p className="mt-2 text-center text-xs text-muted">{zapMsg}</p>
+            )}
           </div>
         )}
       </section>
@@ -411,9 +444,10 @@ export default function StickerMaker() {
           </p>
         )}
         <p className="mt-3 text-xs text-muted">
-          «Mandar no zap» envia a figurinha como imagem pra escolher o contato.
-          Pra virar figurinha de verdade no WhatsApp, baixa o pacote e importa no
-          Sticker Maker (funciona no Android e iOS).
+          «Mandar no zap»: no celular abre o WhatsApp com a figurinha direto; no
+          desktop copia e abre o WhatsApp Web pra colar (Ctrl+V). Pra virar
+          figurinha de verdade, baixa o pacote e importa no Sticker Maker
+          (Android e iOS).
         </p>
       </section>
     </div>
