@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   serverExternalPackages: ["ffmpeg-static"],
+  outputFileTracingIncludes: {
+    // Binário do ffmpeg precisa viajar com a função da rota de stickers
+    "/api/tools/sticker": ["./node_modules/ffmpeg-static/ffmpeg"],
+  },
   async headers() {
     return [
       {
