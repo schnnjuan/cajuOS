@@ -16,7 +16,7 @@ id = "96f97fdb3a984003836924ce5ca238b8"
 
 [[containers]]
 class_name = "GalleryContainer"
-image = "./Dockerfile"
+image = "ghcr.io/schnnjuan/video-dl-gallery:latest"
 max_instances = 2
 name = "video-dl-gallery"
 
