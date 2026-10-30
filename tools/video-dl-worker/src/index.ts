@@ -1,10 +1,17 @@
 import { extract, slugify, UA, type ExtractResult } from "./extract";
 import { downloadMp4 } from "./download-mp4";
 import { downloadHls } from "./download-hls";
+import { Container, getContainer, switchPort } from "@cloudflare/containers";
+
+export class GalleryContainer extends Container {
+  defaultPort = 8080;
+  sleepAfter = "2m";
+}
 
 interface Env {
   ALLOWED_ORIGIN?: string;
   VIDEO_DL_CACHE?: KVNamespace;
+  GALLERY_CONTAINER?: DurableObjectNamespace<GalleryContainer>;
 }
 
 const CACHE_TTL = 600;
@@ -238,6 +245,17 @@ export default {
       if (path === "/go") return await handleGo(request, url, cors, env);
       if (path === "/dl/mp4" || path === "/dl/hls") {
         return await handleDl(request, url, cors);
+      }
+      if (path === "/gallery/download") {
+        const container = getContainer(env.GALLERY_CONTAINER!, "gallery");
+        const containerUrl = new URL(request.url);
+        containerUrl.pathname = "/download";
+        const newReq = new Request(containerUrl.toString(), request);
+        const resp = await container.fetch(switchPort(newReq, 8080));
+        // add cors
+        const headers = new Headers(resp.headers);
+        cors.forEach((v, k) => headers.set(k, v));
+        return new Response(resp.body, { status: resp.status, headers });
       }
       return Response.json({ ok: false, error: "not-found" }, { status: 404, headers: cors });
     } catch (e) {

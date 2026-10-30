@@ -14,5 +14,19 @@ ALLOWED_ORIGIN = "https://cajuos.dev"
 binding = "VIDEO_DL_CACHE"
 id = "96f97fdb3a984003836924ce5ca238b8"
 
+[[containers]]
+class_name = "GalleryContainer"
+image = "./Dockerfile"
+max_instances = 2
+name = "video-dl-gallery"
+
+[[durable_objects.bindings]]
+name = "GALLERY_CONTAINER"
+class_name = "GalleryContainer"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["GalleryContainer"]
+
 [triggers]
 crons = []
