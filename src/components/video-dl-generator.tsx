@@ -325,6 +325,13 @@ export default function VideoDlGenerator() {
             {status === "extracting" ? "Procurando fonte…" : "Encontrar fonte"}
           </button>
 
+          {url.trim() && (
+            <p className="text-xs text-muted">
+              Backend gallery-dl no site em desenvolvimento. Por enquanto use o comando
+              abaixo no terminal.
+            </p>
+          )}
+
           {status === "extracting" && (
             <div className="relative h-24 overflow-hidden rounded-xl border border-border">
               <div className="absolute inset-0 animate-pulse rounded-xl bg-muted" />
