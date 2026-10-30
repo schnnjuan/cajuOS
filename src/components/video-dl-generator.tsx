@@ -262,6 +262,12 @@ export default function VideoDlGenerator() {
     return `ffmpeg -y -i '${selected.url}' -c copy '${slugify(result.title)}_${quality}.mp4'`;
   };
 
+  const commandGalleryDl = (): string => {
+    const target = result?.page || url.trim();
+    if (!target) return "";
+    return `gallery-dl "${target}"`;
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4 border-b border-border text-sm">
@@ -498,6 +504,26 @@ export default function VideoDlGenerator() {
                   </p>
                 </div>
               )}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-foreground">gallery-dl (baixa mídia do site)</span>
+                  <button
+                    type="button"
+                    onClick={() => copy(commandGalleryDl(), "api-gallery")}
+                    className="pressable rounded-md border border-border px-2 py-1 text-[10px] text-muted hover:border-foreground"
+                  >
+                    {copied === "api-gallery" ? "Copiado ✓" : "Copiar"}
+                  </button>
+                </div>
+                <pre className="overflow-x-auto rounded-md border border-border bg-background px-3 py-2 text-[10px] leading-relaxed text-muted">
+                  {commandGalleryDl()}
+                </pre>
+                <p className="text-xs text-muted">
+                  Roda no seu PC (pip install gallery-dl). Baixa imagens, áudios e vídeos de quase
+                  qualquer site — TikTok, Instagram, Twitter etc. Use <code>-g</code> pra só listar
+                  URLs sem baixar.
+                </p>
+              </div>
             </>
           ) : (
             <>
@@ -513,6 +539,16 @@ curl 'https://video-dl.cajuos.dev/extract?page=URL'
 # baixa a melhor qualidade (ou a escolhida com &q=1080p)
 curl -L 'https://video-dl.cajuos.dev/go?page=URL' -o video.mp4`}
               </pre>
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-medium text-foreground">gallery-dl (baixa mídia de qualquer site)</span>
+                <pre className="overflow-x-auto rounded-md border border-border bg-background px-3 py-2 text-[10px] leading-relaxed text-muted">
+gallery-dl "URL"
+                </pre>
+                <p className="text-xs text-muted">
+                  Roda no seu PC (pip install gallery-dl). Baixa imagens, áudios e vídeos de quase
+                  qualquer site — TikTok, Instagram, Twitter etc.
+                </p>
+              </div>
               <p className="text-xs text-muted">
                 Extraia uma fonte pra ver o comando exato do vídeo pronto pra copiar.
               </p>
