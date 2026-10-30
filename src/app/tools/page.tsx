@@ -1,7 +1,8 @@
+import type { Metadata } from "next";
 import { tools } from "@/lib/tools";
-import { ToolCard } from "@/components/tool-card";
+import { ToolsBrowser } from "@/components/tools-browser";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Tools",
   description: "Todas as ferramentas CajuOS.",
   openGraph: {
@@ -22,16 +23,14 @@ export const metadata = {
 
 export default function ToolsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-20">
-      <h1 className="text-3xl font-semibold tracking-tight">Tools</h1>
-      <p className="mt-2 text-muted">
-        {tools.length} tools lançadas. Uma nova toda semana.
-      </p>
-      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {tools.map((tool, i) => (
-          <ToolCard key={tool.slug} tool={tool} index={i} />
-        ))}
-      </div>
+    <div className="mx-auto max-w-5xl px-6 py-12 sm:py-16">
+      <section className="flex flex-col items-center gap-2 text-center">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Tools</h1>
+        <p className="text-muted">{tools.length} ferramentas. Uma nova toda semana.</p>
+      </section>
+      <section className="mt-10">
+        <ToolsBrowser tools={tools} />
+      </section>
     </div>
   );
 }

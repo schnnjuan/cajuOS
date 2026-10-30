@@ -1,20 +1,20 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { tools, toolProgressLabel, currentWeek } from "@/lib/tools";
-import { ToolIcon } from "@/components/tool-icons";
+import { ToolsBrowser } from "@/components/tools-browser";
 
 export const metadata: Metadata = {
   openGraph: {
     title: "CajuOS",
     description:
-      "Uma tool por semana. Ferramentas úteis que rodam no navegador.",
+      "Ferramentas úteis que rodam no navegador. Uma por semana.",
     url: "https://cajuos.dev",
   },
   twitter: {
     card: "summary_large_image",
     title: "CajuOS",
     description:
-      "Uma tool por semana. Ferramentas úteis que rodam no navegador.",
+      "Ferramentas úteis que rodam no navegador. Uma por semana.",
     images: ["/opengraph-image.png"],
   },
   alternates: {
@@ -26,80 +26,53 @@ export default function Home() {
   const week = currentWeek();
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-20">
-      <section className="flex flex-col gap-6">
-        <p className="text-sm text-muted tabular-nums">{toolProgressLabel()} · Semana {week}</p>
+    <div className="mx-auto max-w-5xl px-6 py-12 sm:py-16">
+      {/* Hero */}
+      <section className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          Pequenas ferramentas úteis.
-          <br />
-          Uma por semana.
+          caju<span className="text-accent">os</span>
         </h1>
-        <p className="max-w-xl text-lg text-muted text-pretty">
-          Tools que resolvem problemas de verdade. Tudo open source, tudo
-          roda no navegador.
+        <p className="text-lg text-muted">
+          Seu toolkit de desenvolvimento online
         </p>
-        <div className="flex gap-4">
-          <Link
-            href="/tools"
-            className="inline-flex items-center rounded-md bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-[color,transform] duration-150 active:scale-95 hover:opacity-90"
-          >
-            Explorar tools
-          </Link>
-          <Link
-            href="/experiment"
-            className="inline-flex items-center rounded-md border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:border-foreground"
-          >
-            Sobre o experimento
-          </Link>
-        </div>
+        <p className="text-sm text-muted tabular-nums">
+          {tools.length} ferramentas úteis · {toolProgressLabel()} · Semana {week}
+        </p>
       </section>
 
-      {/* Lançamentos */}
+      {/* Tools */}
+      <section className="mt-10">
+        <ToolsBrowser tools={tools} />
+      </section>
+
+      {/* Experimento */}
       <section className="mt-20">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-muted mb-6">
-          Lançamentos
+        <h2 className="text-sm font-medium uppercase tracking-wide text-muted mb-4">
+          Experimento
         </h2>
-        <div className="flex flex-col gap-3">
-          {tools.length > 0 ? (
-            tools.map((tool, i) => (
-              <Link
-                key={tool.slug}
-                href={`/tools/${tool.slug}`}
-                className="card-hover group flex items-start gap-4 rounded-xl border border-border bg-card p-5"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                  <ToolIcon slug={tool.slug} size={20} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium tracking-tight">{tool.name}</h3>
-                    <span className="text-xs text-accent tabular-nums">#{i + 1}</span>
-                  </div>
-                  <p className="mt-1 text-sm text-muted">{tool.tagline}</p>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <p className="text-sm text-muted">Nenhuma tool lançada ainda. Esta semana sai a primeira.</p>
-          )}
-
-          {/* Placeholder próxima tool */}
-          <div className="rounded-xl border border-dashed border-border p-5">
-            <p className="text-sm text-muted">Próxima tool essa semana</p>
+        <Link
+          href="/experiment"
+          className="card-hover group flex items-start gap-4 rounded-xl border border-border bg-card p-5"
+        >
+          <div className="min-w-0 flex-1">
+            <h3 className="font-medium tracking-tight">Uma tool por semana</h3>
+            <p className="mt-1 text-sm text-muted">
+              Tudo open source, tudo roda no navegador. Sem cadastro, sem instalação.
+            </p>
           </div>
-        </div>
+        </Link>
       </section>
 
-      <section className="mt-20">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-muted mb-6">
+      {/* Jogos */}
+      <section className="mt-12">
+        <h2 className="text-sm font-medium uppercase tracking-wide text-muted mb-4">
           Jogos
         </h2>
         <a
           href="https://games.cajuos.dev"
           target="_blank"
           rel="noopener noreferrer"
-          className="card-hover animate-in group flex items-start gap-4 rounded-xl border border-border bg-card p-5"
-          style={{ animationDelay: "0ms" }}
+          className="card-hover group flex items-start gap-4 rounded-xl border border-border bg-card p-5"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20" aria-hidden="true" className="text-muted">
@@ -117,6 +90,24 @@ export default function Home() {
             </p>
           </div>
         </a>
+      </section>
+
+      {/* Blog */}
+      <section className="mt-12">
+        <h2 className="text-sm font-medium uppercase tracking-wide text-muted mb-4">
+          Blog
+        </h2>
+        <Link
+          href="/blog"
+          className="card-hover group flex items-start gap-4 rounded-xl border border-border bg-card p-5"
+        >
+          <div className="min-w-0 flex-1">
+            <h3 className="font-medium tracking-tight">Notas e bastidores</h3>
+            <p className="mt-1 text-sm text-muted">
+              Acompanhe o experimento e as decisões de produto.
+            </p>
+          </div>
+        </Link>
       </section>
     </div>
   );

@@ -5,6 +5,7 @@ export type Tool = {
   icon: string;
   hasApi: boolean;
   launchedAt: string;
+  category: string;
 };
 
 // Ordem = ordem de lançamento. "Tool #N de ∞" usa o índice.
@@ -17,6 +18,7 @@ export const tools: Tool[] = [
     icon: "🎨",
     hasApi: false,
     launchedAt: "2026-07-24",
+    category: "Mídia",
   },
   {
     slug: "video-dl",
@@ -25,6 +27,7 @@ export const tools: Tool[] = [
     icon: "🎬",
     hasApi: true,
     launchedAt: "2026-08-01",
+    category: "Mídia",
   },
   {
     slug: "churrasco",
@@ -33,14 +36,7 @@ export const tools: Tool[] = [
     icon: "🥩",
     hasApi: false,
     launchedAt: "2026-10-01",
-  },
-  {
-    slug: "stickers",
-    name: "Gerador de Figurinhas",
-    tagline: "Faz figurinha pro WhatsApp de foto, gif ou vídeo de até 10s — quadrada, rápida, com pacote pronto.",
-    icon: "🙂",
-    hasApi: true,
-    launchedAt: "2026-10-24",
+    category: "Geral",
   },
 ];
 
